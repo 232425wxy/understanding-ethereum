@@ -69,6 +69,8 @@ var bigWordNibbles int
 //
 // 用来计算bigWordNibbles的值等于多少，我们知道^uint64(0)用16进制表示等于"ffffffffffffffff"，由16个"f"组成，换句话说就是，
 // ^uint64(0)由16个16进制数组成，在64位操作系统中，如果一个big.Word就可以存储^uint64(0)，则表明一个big.Word可以存储16个16进制数。
+//
+//	🚨注意：这个函数没有按照官方的方式去实现。
 func init() {
 	b := new(big.Int).SetUint64(^uint64(0))
 	switch len(b.Bits()) {
