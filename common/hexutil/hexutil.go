@@ -17,7 +17,7 @@ import (
 
 // uintBits ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// uintBits定义了一个uint类型占用了多少个比特位，一般来讲uint类型的数据要么占据32位，要么占据64位，
+// uintBits 定义了一个uint类型占用了多少个比特位，一般来讲uint类型的数据要么占据32位，要么占据64位，
 // 所以，我们先获取uint类型的最大值：^uint(0)，然后将其右移63个比特位，如果本系统支持的是64位操作系
 // 统，那么^uint(0)右移63位应当等于1，否则等于0。
 // 下面的代码与[const uintBits = 32 << (^uint(0) >> 63)]等效。
@@ -38,7 +38,7 @@ func (err decError) Error() string {
 
 // Errors ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// 定义了9个项目全局范围内的decError实例，用来反映在解码16进制字符串时可能遇到的错误。
+// 定义了9个项目全局范围内的 decError 实例，用来反映在解码16进制字符串时可能遇到的错误。
 var (
 	// ErrEmptyString 如果给定的16进制数是空的，就是连前缀都不含有，则报告该错误。
 	ErrEmptyString = &decError{msg: "empty hex string"}
@@ -61,13 +61,13 @@ var (
 
 // bigWordNibbles ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// bigWordNibbles定义了一个big.Word可以存储多少个16进制数字，不同的操作系统具有不同结果，
-// 我们这里在运行时计算获取一个big.Word能存储多少个16进制数，用一个nibble代表一个16进制数。
+// bigWordNibbles 定义了一个 big.Word 可以存储多少个16进制数字，不同的操作系统具有不同结果，
+// 我们这里在运行时计算获取一个 big.Word 能存储多少个16进制数，用一个nibble代表一个16进制数。
 var bigWordNibbles int
 
 // init ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// 用来计算bigWordNibbles的值等于多少，我们知道^uint64(0)用16进制表示等于"ffffffffffffffff"，由16个"f"组成，换句话说就是，
+// 用来计算 bigWordNibbles 的值等于多少，我们知道^uint64(0)用16进制表示等于"ffffffffffffffff"，由16个"f"组成，换句话说就是，
 // ^uint64(0)由16个16进制数组成，在64位操作系统中，如果一个big.Word就可以存储^uint64(0)，则表明一个big.Word可以存储16个16进制数。
 //
 //	🚨注意：这个函数没有按照官方的方式去实现。
@@ -106,7 +106,7 @@ func Decode(number string) ([]byte, error) {
 
 // MustDecode ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// 对Decode方法进行了包装，实际上该方法还是调用了Decode方法，然后如果Decode方法返回了错误，
+// 对 Decode 方法进行了包装，实际上该方法还是调用了 Decode 方法，然后如果 Decode 方法返回了错误，
 // 则MustDecode方法会直接panic。
 func MustDecode(number string) []byte {
 	result, err := Decode(number)
@@ -118,7 +118,7 @@ func MustDecode(number string) []byte {
 
 // DecodeUint64 ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// DecodeUint64将给定的16进制数字（字符串形式，必须带有"0x"或"0X"前缀）解析成10进制数字。
+// DecodeUint64 将给定的16进制数字（字符串形式，必须带有"0x"或"0X"前缀）解析成10进制数字。
 //
 //	例如：输入"0x1f"，得到结果：31
 func DecodeUint64(number string) (uint64, error) {
@@ -135,7 +135,7 @@ func DecodeUint64(number string) (uint64, error) {
 
 // MustDecodeUint64 ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// 对DecodeUint64方法进行包装，实际上MustDecodeUint64调用DecodeUint64方法解码给定的16进制数字，如果返回错误，则直接panic。
+// 对 DecodeUint64 方法进行包装，实际上 MustDecodeUint64 调用 DecodeUint64 方法解码给定的16进制数字，如果返回错误，则直接panic。
 func MustDecodeUint64(number string) uint64 {
 	result, err := DecodeUint64(number)
 	if err != nil {
@@ -187,7 +187,7 @@ func DecodeBig(number string) (*big.Int, error) {
 
 // MustDecodeBig ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// MustDecodeBig实际上执行DecodeBig来解码16进制的大数字，DecodeBig如果返回错误，则直接panic。
+// MustDecodeBig 实际上执行 DecodeBig 来解码16进制的大数字，DecodeBig 如果返回错误，则直接panic。
 func MustDecodeBig(number string) *big.Int {
 	result, err := DecodeBig(number)
 	if err != nil {
@@ -274,8 +274,8 @@ func checkNumber(number string) (raw string, err error) {
 
 // badNibble ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
-// badNibble定义了64位无符号整型的最大值，如果在解码16进制数字时，遇到超出[0, f]范围的数字，则用badNibble来替换它原本的值，
-// 如果用16进制来表示badNibble的值，它应该等于"ffffffffffffffff"。
+// badNibble定义了64位无符号整型的最大值，如果在解码16进制数字时，遇到超出[0, f]范围的数字，则用 badNibble 来替换它原本的值，
+// 如果用16进制来表示 badNibble 的值，它应该等于"ffffffffffffffff"。
 const badNibble = ^uint64(0)
 
 // decodeNibble ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
