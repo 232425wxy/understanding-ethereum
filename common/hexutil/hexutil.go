@@ -1,3 +1,9 @@
+/*
+Package hexutil这个文件定义了如何在uint64和16进制之间进行编解码；定义了如何在大整数和16进制之间进行编解码；
+定义了如何在普通字符串或字节切片与16进制之间进行编解码。
+
+乙太坊中定义的16进制数据必定要以"0x"作为前缀，乙太坊规定用16进制最大只能定义256比特位的大整数。
+*/
 package hexutil
 
 import (
@@ -203,7 +209,8 @@ func Encode(bz []byte) string {
 // EncodeUint64 ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
 // 将64位的无符号整型转换成带有"0x"前缀的16进制数据。
-// 例如：输入24，得到结果"0x18"；输入7，得到结果"0x7"
+//
+//	例如：输入24，得到结果"0x18"；输入7，得到结果"0x7"
 func EncodeUint64(number uint64) string {
 	result := make([]byte, 2, 10)
 	copy(result, "0x")
@@ -213,6 +220,7 @@ func EncodeUint64(number uint64) string {
 // EncodeBig ♏ |作者：吴翔宇| 🍁 |日期：2022/10/26|
 //
 // 对大整数进行编码，得到含有"0x"前缀的16进制数字字符串形式的结果。
+//
 //	例如输入的大整数为-12，得到结果"-0xc"
 func EncodeBig(number *big.Int) string {
 	switch sign := number.Sign(); sign {
