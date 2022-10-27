@@ -9,7 +9,7 @@ Package hexutil
 每个类型都为其实现了 MarshalText、UnmarshalText、UnmarshalJSON方法，
 UnmarshalText与UnmarshalJSON之间的关系为：当我们调用json.Unmarshal去解码数据时，如果给定的指针所代表的数据类型实现了
 UnmarshalJSON方法，则会调用该类型自定义的UnmarshalJSON方法进行解码；否则如果给定的指针所代表的数据类型实现了UnmarshalText
-// 方法，并且需要解码的数据被引号包围，则会调用该类型自定义的UnmarshalText方法进行解码（解码的时候会把引号去掉）。
+方法，并且需要解码的数据被双引号包围，则会调用该类型自定义的UnmarshalText方法进行解码（解码的时候会把引号去掉）。
 
 其中，Bytes、Big和Uint64三个类型还实现了 ImplementsGraphQLType 和 UnmarshalGraphQL 两个方法。
 */
