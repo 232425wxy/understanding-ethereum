@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/common/bitutil/bitutil_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/hexutil/json.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/hexutil/json.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/hexutil/json_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/hexutil/json_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/bitutil/bitutil.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/bitutil/bitutil.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,20 +61,20 @@
     "settings.editor.selected.configurable": "editing.templates"
   }
 }]]></component>
-  <component name="RunManager" selected="Go Test.TestUint64_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil">
-    <configuration name="TestBig_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Go Test.TestUnsafePointer in github.com/232425wxy/understanding-ethereum/common/bitutil">
+    <configuration name="TestSafeXORBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <working_directory value="$PROJECT_DIR$/common/bitutil" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestBig_UnmarshalText\E$" />
+      <pattern value="^\QTestSafeXORBytes\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestBytes_UnmarshalGraphQL in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestUnmarshalBytes in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/common/hexutil" />
       <root_directory value="$PROJECT_DIR$" />
@@ -83,34 +83,34 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestBytes_UnmarshalGraphQL\E$" />
+      <pattern value="^\QTestUnmarshalBytes\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestBytes_UnmarshalJSON in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestUnsafePointer in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <working_directory value="$PROJECT_DIR$/common/bitutil" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestBytes_UnmarshalJSON\E$" />
+      <pattern value="^\QTestUnsafePointer\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestUint64_MarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestWordSize in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <working_directory value="$PROJECT_DIR$/common/bitutil" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestUint64_MarshalText\E$" />
+      <pattern value="^\QTestWordSize\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestUint64_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="go test github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/common/hexutil" />
       <root_directory value="$PROJECT_DIR$" />
@@ -119,16 +119,15 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestUint64_UnmarshalText\E$" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Test.TestUint64_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" />
-        <item itemvalue="Go Test.TestUint64_MarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" />
-        <item itemvalue="Go Test.TestBig_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" />
-        <item itemvalue="Go Test.TestBytes_UnmarshalJSON in github.com/232425wxy/understanding-ethereum/common/hexutil" />
-        <item itemvalue="Go Test.TestBytes_UnmarshalGraphQL in github.com/232425wxy/understanding-ethereum/common/hexutil" />
+        <item itemvalue="Go Test.TestUnsafePointer in github.com/232425wxy/understanding-ethereum/common/bitutil" />
+        <item itemvalue="Go Test.TestSafeXORBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" />
+        <item itemvalue="Go Test.TestWordSize in github.com/232425wxy/understanding-ethereum/common/bitutil" />
+        <item itemvalue="Go Test.go test github.com/232425wxy/understanding-ethereum/common/hexutil" />
+        <item itemvalue="Go Test.TestUnmarshalBytes in github.com/232425wxy/understanding-ethereum/common/hexutil" />
       </list>
     </recent_temporary>
   </component>
