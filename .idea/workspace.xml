@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/common/hexutil/hexutil.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/hexutil/hexutil_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/hexutil/json.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/hexutil/json.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/hexutil/json_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/hexutil/json_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,9 +56,82 @@
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "editing.templates"
   }
 }]]></component>
+  <component name="RunManager" selected="Go Test.TestUint64_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil">
+    <configuration name="TestBig_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestBig_UnmarshalText\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestBytes_UnmarshalGraphQL in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestBytes_UnmarshalGraphQL\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestBytes_UnmarshalJSON in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestBytes_UnmarshalJSON\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestUint64_MarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestUint64_MarshalText\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestUint64_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/hexutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestUint64_UnmarshalText\E$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestUint64_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" />
+        <item itemvalue="Go Test.TestUint64_MarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" />
+        <item itemvalue="Go Test.TestBig_UnmarshalText in github.com/232425wxy/understanding-ethereum/common/hexutil" />
+        <item itemvalue="Go Test.TestBytes_UnmarshalJSON in github.com/232425wxy/understanding-ethereum/common/hexutil" />
+        <item itemvalue="Go Test.TestBytes_UnmarshalGraphQL in github.com/232425wxy/understanding-ethereum/common/hexutil" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
@@ -74,7 +148,6 @@
     </option>
   </component>
   <component name="VgoProject">
-    <integration-enabled>false</integration-enabled>
     <settings-migrated>true</settings-migrated>
   </component>
 </project>
