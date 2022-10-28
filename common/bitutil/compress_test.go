@@ -25,7 +25,7 @@ func TestBitsetDecodedPartialBytes(t *testing.T) {
 	t.Log("ptr:", ptr)
 }
 
-func TestOne(t *testing.T) {
+func TestHugeData(t *testing.T) {
 	src := make([]byte, 1024*1024*512)
 	for i := 0; i < 1024*512; i++ {
 		src[rand.Intn(len(src))] = 1
