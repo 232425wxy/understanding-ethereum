@@ -1,7 +1,9 @@
 package bitutil
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"math/rand"
 	"testing"
 )
 
@@ -21,4 +23,20 @@ func TestBitsetDecodedPartialBytes(t *testing.T) {
 	assert.Nil(t, err)
 	t.Log("解压缩结果:", result)
 	t.Log("ptr:", ptr)
+}
+
+func TestOne(t *testing.T) {
+	src := make([]byte, 1024*1024*512)
+	for i := 0; i < 1024*512; i++ {
+		src[rand.Intn(len(src))] = 1
+	}
+	result := CompressBytes(src)
+	dec, err := DecompressBytes(result, len(src))
+	assert.Nil(t, err)
+	assert.Equal(t, dec, src)
+	t.Log(fmt.Sprintf("压缩前数据大小:%.2fMB", float64(len(src))/float64(1024*1024)))
+	t.Log(fmt.Sprintf("压缩后数据大小:%.2fMB", float64(len(result))/float64(1024*1024)))
+	// 输出：
+	// compress_test.go:37: 压缩前数据大小:512.00MB
+	// compress_test.go:38: 压缩后数据大小:2.02MB
 }
