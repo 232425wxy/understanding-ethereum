@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -50,7 +48,7 @@
     "WebServerToolWindowFactoryState": "false",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/home/rain/lab/code/go/src/understanding-ethereum",
+    "last_opened_file_path": "/home/rain/lab/code/go/src/go-ethereum",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -59,32 +57,8 @@
     "settings.editor.selected.configurable": "editing.templates"
   }
 }]]></component>
-  <component name="RunManager" selected="Go Test.TestUnsafePointer in github.com/232425wxy/understanding-ethereum/common/bitutil">
-    <configuration name="BenchmarkFastTestBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/common/bitutil" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gobench" />
-      <pattern value="^\QBenchmarkFastTestBytes\E$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="BenchmarkSafeTestBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/common/bitutil" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gobench" />
-      <pattern value="^\QBenchmarkSafeTestBytes\E$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="TestUnsafePointer in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Go Test.TestHugeData in github.com/232425wxy/understanding-ethereum/common/bitutil">
+    <configuration name="TestBitsetDecodedPartialBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/common/bitutil" />
       <root_directory value="$PROJECT_DIR$" />
@@ -93,7 +67,31 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestUnsafePointer\E$" />
+      <pattern value="^\QTestBitsetDecodedPartialBytes\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestHugeData in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/bitutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHugeData\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestOne in github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/common/bitutil" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/common/bitutil" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestOne\E$" />
       <method v="2" />
     </configuration>
     <configuration name="go test github.com/232425wxy/understanding-ethereum/common/bitutil" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -120,11 +118,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Test.TestUnsafePointer in github.com/232425wxy/understanding-ethereum/common/bitutil" />
+        <item itemvalue="Go Test.TestHugeData in github.com/232425wxy/understanding-ethereum/common/bitutil" />
+        <item itemvalue="Go Test.TestOne in github.com/232425wxy/understanding-ethereum/common/bitutil" />
         <item itemvalue="Go Test.gobench github.com/232425wxy/understanding-ethereum/common/bitutil" />
         <item itemvalue="Go Test.go test github.com/232425wxy/understanding-ethereum/common/bitutil" />
-        <item itemvalue="Go Test.BenchmarkFastTestBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" />
-        <item itemvalue="Go Test.BenchmarkSafeTestBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" />
+        <item itemvalue="Go Test.TestBitsetDecodedPartialBytes in github.com/232425wxy/understanding-ethereum/common/bitutil" />
       </list>
     </recent_temporary>
   </component>
