@@ -7,6 +7,8 @@ marshal/unmarshal，它们俩都各自实现了MarshalText和UnmarshalText方法
     两边加上双引号得到字符串，然后再将字符串转换成字节切片，更本不会将原大整数转换成16进制，更不会在前面加上"0x"前缀。
   - HexOrDecimal256 的UnmarshalText和 Decimal256 功能一样，都能将含有前缀的16进制或者不含前缀的10进制数据解析成大整数。
 
+需要注意的地方是，无论 HexOrDecimal256 还是 Decimal256，它们所能支持的大整数必须在256比特以内。
+
 随后，该文件还定义了以下方法：
 
   - func BigPow(a, b int64) *big.Int
