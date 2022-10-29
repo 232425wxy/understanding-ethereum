@@ -1,3 +1,40 @@
+/*
+Package math
+
+该文件内定义了两个结构体：HexOrDecimal256和Decimal256，它们的底层实现都是big.Int，定义这两个结构体是为了实现对big.Int进行
+marshal/unmarshal，它们俩都各自实现了MarshalText和UnmarshalText方法，HexOrDecimal256和Decimal256不同的地方在于：
+  - HexOrDecimal256 的MarshalText方法会将大整数编码成16进制数，并在前面加上"0x"前缀，而 Decimal256 只会在原10进制数
+    两边加上双引号得到字符串，然后再将字符串转换成字节切片，更本不会将原大整数转换成16进制，更不会在前面加上"0x"前缀。
+  - HexOrDecimal256 的UnmarshalText和 Decimal256 功能一样，都能将含有前缀的16进制或者不含前缀的10进制数据解析成大整数。
+
+随后，该文件还定义了以下方法：
+
+  - func BigPow(a, b int64) *big.Int
+
+  - func BigMax(x, y *big.Int) *big.Int
+
+  - func BigMin(x, y *big.Int) *big.Int
+
+  - func FirstBitSet(i *big.Int) int
+
+  - func ReadBits(bigInt *big.Int, buf []byte)
+
+  - func PaddedBigBytes(bigInt *big.Int, n int) []byte
+
+  - func Byte(bigInt *big.Int, padLen, n int) byte
+
+    U256Bytes 方法将一个给定的大整数（比特位小于等于256）填充为一个含有32个字节的大整数，从而转换成乙太坊虚拟机里的支持的数字
+
+  - func U256Bytes(n *big.Int) []byte
+
+    S256 方法接受一个大整数x作为入参，如果x小于2^255，则直接返回x，否则计算x-2^256，并返回计算结果
+
+  - func S256(x *big.Int) *big.Int
+
+    Exp 方法接受两个大整数base和exponent作为入参，然后计算result=base^exponent，并将result返回
+
+  - func Exp(base, exponent *big.Int) *big.Int
+*/
 package math
 
 import (
