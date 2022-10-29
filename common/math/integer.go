@@ -1,3 +1,16 @@
+/*
+Package math
+
+该文件类定义了一个类型：HexOrDecimal64，该类型的地层实现是uint64，通过它实现了对uint64进行marshal/unmarshal，marshal会将
+64位无符号整型编码成含有"0x"前缀的16进制数，unmarshal支持将含有"0x"或"0X"前缀的16进制数或者10进制数转换成64位无符号整型。
+
+此外，该文件还定义了如下全局函数：
+  - func SafeSub(x, y uint64) (uint64, bool)
+  - func SafeAdd(x, y uint64) (uint64, bool)
+  - func SafeMul(x, y uint64) (uint64, bool)
+
+以上三个全局函数的第二个返回值反映了对两个64位无符号整型进行加、减乘操作后是否会出现溢出。如果溢出，则第二个返回值为true。
+*/
 package math
 
 import (
