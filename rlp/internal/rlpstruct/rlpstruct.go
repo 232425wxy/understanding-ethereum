@@ -89,8 +89,9 @@ type Tag struct {
 	// NilManual 如果我们在定义结构体字段时手动的在tag处为其设置了NIlKind，则NilManual会被设置为true
 	NilManual bool
 	// Optional 如果结构体字段的tag被设置为`rlp:"optional"`，那么Optional被设置为true。要求如果该结构体的编码规则被设置
-	// 为`rlp:"optional"`，则其后的所有字段的rlp编码规则都必须被设置为`rlp:"optional"`，编码规则被设置为`rlp:"optional"`
-	// 的字段，在编码时，如果该字段的值等于零值，则不被编码，并且其后的所有字段都不会被编码（即使存在值为非空的字段）。
+	// 为`rlp:"optional"`，则其后的所有字段的rlp编码规则都必须被设置为`rlp:"optional"`，但是，有一种情况除外，那就是如果
+	// 结构体的最后一个字段是一个切片，并且想为该字段设置"tail"，则不必为该字段的tag再设置"optional"。编码规则被设置为
+	// `rlp:"optional"`的字段，在编码时，如果该字段的值等于零值，则不被编码，并且其后的所有字段都不会被编码（即使存在值为非空的字段）。
 	Optional bool
 	// Tail 如果结构体字段的tag被设置为`rlp:"tail"`，那么Tail被设置为true。只有结构体最后一个可导出且类型必须是切片类型的字段的编码
 	// 规则才能被设置为`rlp:"tail"`，在对切片类型的数据编码时，数据会被看成是一个列表，如果该数据的编码规则被设置为`rlp:"tail"`，
@@ -126,9 +127,51 @@ func (e TagError) Error() string {
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
+// ProcessFields ♏ |作者：吴翔宇| 🍁 |日期：2022/10/30|
+//
+// ProcessFields 方法用来处理自定义结构体里的字段信息，该方法接受一个入参：[]Field，该入参表示某个结构体的所有字段信息，
+// 然后 ProcessFields 方法就是筛选出所有会参与rlp编码的字段，并解析这些字段的tag，得到经过过滤的[]Field和新的[]Tag。
+func ProcessFields(allFields []Field) ([]Field, []Tag, error) {
+	lastPublic := lastPublicField(allFields)
+	var fields []Field
+	var tags []Tag
+	for _, field := range allFields {
+		if !field.Exported {
+			continue
+		}
+		tag, err := parseTag(field, lastPublic)
+		if err != nil {
+			return nil, nil, err
+		}
+		if tag.Ignored {
+			continue
+		}
+		fields = append(fields, field)
+		tags = append(tags, tag)
+	}
+	var anyOptional bool
+	var firstOptionalName string
+	for i, tag := range tags {
+		name := fields[i].Name
+		if tag.Optional || tag.Tail {
+			if !anyOptional {
+				firstOptionalName = name
+			}
+			anyOptional = true
+		} else {
+			if anyOptional {
+				return nil, nil, TagError{Field: name, Err: fmt.Sprintf("must be optional because preceding field %q is optional", firstOptionalName)}
+			}
+		}
+	}
+	return fields, tags, nil
+}
+
 // parseTag ♏ |作者：吴翔宇| 🍁 |日期：2022/10/29|
 //
-// 该方法用来解析结构体字段的tag值，
+// 该方法用来解析结构体字段的tag值，该方法接受两个参数，第一个参数是 Field 实例，用来描述结构体字段信息，第二个参数是
+// lastPublic，用来表示结构体中最后一个可导出字段的索引值，它被用来验证tag被设置为tail的字段是否是结构体中最后一个可
+// 导出字段。
 func parseTag(field Field, lastPublic int) (Tag, error) {
 	tag := reflect.StructTag(field.Tag)
 	var result Tag
