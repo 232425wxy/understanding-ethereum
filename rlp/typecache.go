@@ -130,7 +130,7 @@ func (tc *typeCache) generate(typ reflect.Type, tag rlpstruct.Tag) *typeInfo {
 	}
 	info := tc.infoWhileGenerating(typ, tag)
 	tc.cur.Store(tc.next)
-	tc.next = nil
+	tc.next = nil // 将 tc.next 设置为nil，不会影响到 tc.cur
 	return info
 }
 
