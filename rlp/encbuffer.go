@@ -1,6 +1,9 @@
 package rlp
 
-import "sync"
+import (
+	"io"
+	"sync"
+)
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
@@ -44,9 +47,19 @@ func (buf *encBuffer) reset() {
 
 // size ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
 //
-// size 方法返回已编码数据的长度：len(encBuffer.str)+encBuffer.lHeadsSize。
+// size 方法返回已编码数据的长度：len(encBuffer.str)+encBuffer.lHeadsSize，该方法返回的值就是编码数据的
+// 结果的完整长度，例如原始数据是data，编码后的结果是result，那么该方法返回的结果相当于len(result)，
 func (buf *encBuffer) size() int {
 	return len(buf.str) + buf.lHeadsSize
+}
+
+// makeBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/4|
+//
+// makeBytes 方法的作用就是将编码结果完整的返回出来。
+func (buf *encBuffer) makeBytes() []byte {
+	result := make([]byte, buf.size())
+	buf.copyTo(result)
+	return result
 }
 
 // copyTo ♏ |作者：吴翔宇| 🍁 |日期：2022/11/4|
@@ -67,4 +80,48 @@ func (buf *encBuffer) copyTo(dst []byte) {
 	// 下面这句很关键，如果我们编码的数据完全是字符串，那么上面的for循环根本不会执行，那么下面这段代码就可以将编码的
 	// 字符串数据拷贝出来；而如果我们编码的数据是一个列表，那么下面这行代码可以将最后一个头后面跟着的编码数据拷贝出来
 	copy(dst[pos:], buf.str[strPos:])
+}
+
+// writeTo ♏ |作者：吴翔宇| 🍁 |日期：2022/11/4|
+//
+// writeTo 方法接受一个 io.Writer 参数，该方法将编码结果完整地写入到给定的 io.Writer 里，官方的实现代码如下：
+//
+//	strpos := 0
+//	for _, head := range buf.lHeads {
+//		// write string data before header
+//		if head.offset-strpos > 0 {
+//			n, err := w.Write(buf.str[strpos:head.offset])
+//			strpos += n
+//			if err != nil {
+//			return err
+//			}
+//		}
+//		// write the header
+//		enc := head.encodeHead(buf.auxiliaryBuf[:])
+//		if _, err = w.Write(enc); err != nil {
+//			return err
+//		}
+//	}
+//	if strpos < len(buf.str) {
+//		// write string data after the last list header
+//		_, err = w.Write(buf.str[strpos:])
+//	}
+//	return err
+//
+// 我对官方的实现进行了简化，因为我们前面的 makeBytes 方法就可以获得完整的编码结果，何故再利用一个新的逻辑去获取编码结果呢？
+func (buf *encBuffer) writeTo(w io.Writer) error {
+	bz := buf.makeBytes()
+	if _, err := w.Write(bz); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Write ♏ |作者：吴翔宇| 🍁 |日期：2022/11/4|
+//
+// Write 方法实现了 io.Writer 接口，该方法直接将给定的字节切片追加到 encBuffer.str 后面。返回值有两个，第一个返回值表示
+// 给定切片的长度，第二个返回值永远为nil。
+func (buf *encBuffer) Write(bz []byte) (int, error) {
+	buf.str = append(buf.str, bz...)
+	return len(bz), nil
 }
