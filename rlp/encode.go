@@ -26,8 +26,36 @@ var encoderInterface = reflect.TypeOf(new(Encoder)).Elem()
 // listHead 存储了一个列表头的信息，官方源码的写法是"listhead"，可是这在goland编辑器里，会显示波浪线，看着很遭心，
 // 所以我改成了"listHead"。
 type listHead struct {
+	// offset 表明当前编码过后的列表数据的第一个字节在 encBuffer.str 里的索引位置
 	offset int
 	size   int
+}
+
+// encodeHead ♏ |作者：吴翔宇| 🍁 |日期：2022/11/1|
+//
+// encodeHead 方法接受一个字节切片buf作为入参，这个字节切片的长度至少要等于9，官方写法是"encode"，我将其改成了"encodeHead"。
+// 由于 listHead 实例一定是在编码列表数据时才会被使用，因此 putHead 方法的第2和第3两个参数应该分别是0xC0和0xF7，该方法的作用
+// 就是将 listHead.size 编码到给定的buf切片里，并且只返回编码部分的结果：buf[:size]。
+func (lh *listHead) encodeHead(buf []byte) []byte {
+	size := putHead(buf, 0xC0, 0xF7, uint64(lh.size))
+	return buf[:size]
+}
+
+// headSize ♏ |作者：吴翔宇| 🍁 |日期：2022/11/4|
+//
+// headSize 方法接受一个整型参数：size，官方的写法是"headsize"，我将其改成了"headSize"，该方法的作用是计算字符串数据或列表数
+// 据的头需要占用多少字节空间，传入的参数size分以下2种情况：
+//   - 字符串数据或者编码后的列表数据的长度小于56
+//   - 字符串数据或者编码后的列表数据的长度大于或等于56
+//
+// 对于小于56的情况，直接在头的tag（0x80、0xC0）上加上size即可，所以只需要1个字节就可以存储头；对于大于或等于56的情况，我们得先
+// 计算需要多少个字节存储size，例如需要n个字节存储size，那么就需要在头的tag（例如0xC0、0xF7）上加上n，这只需要1个字节就够了，然
+// 后还需要n个字节存储size，所以总共需要1+n个字节。
+func headSize(size uint64) int {
+	if size < 56 {
+		return 1
+	}
+	return 1 + intSize(size)
 }
 
 // putHead ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
@@ -42,7 +70,7 @@ type listHead struct {
 // 据进行编码后的结果。下面给出几个例子：
 //   - 编码的数据是一个长度为32的字符串，那么传入的smallTag和largeTag分别应该等于0x80和0xB7，size等于32，那么编码后的结果为：
 //     buf[0] = 0x80 + 32，buf[0] = 160 = 10100000
-//   - 编码的数据是一个长度为64的字符串，那么传入的smallTag和largeTag分别应该等于0x80和0xB7，size等于32，那么编码后的结果为：
+//   - 编码的数据是一个长度为64的字符串，那么传入的smallTag和largeTag分别应该等于0x80和0xB7，size等于64，那么编码后的结果为：
 //     buf[0] = 0xB7 + putInt(buf[1:], size) = 0xB8 = 184，buf[1] = 01000000
 //   - 编码一个列表，编码后的数据长度等于36，那么传入的smallTag和largeTag分别应该等于0xCO和0xF7，size等于36，那么编码后的结果为：
 //     buf[0] = 0xC0 + 36，buf[0] = 228 = 11100100
