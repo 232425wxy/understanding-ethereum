@@ -62,10 +62,10 @@ var (
 )
 
 const (
-	// wordBits 用来表示一个 big.Word 可以存放多少个比特位，在64位的Ubuntu 20.04操作系统中，wordBits等于64。
-	wordBits = 32 << (uint64(^(big.Word(0))) >> 63)
-	// wordBytes 用来表示一个 big.Word 最多可以存放多少个字节，在64位的Ubuntu 20.04操作系统中，wordBytes等于8。
-	wordBytes = wordBits / 8
+	// WordBits 用来表示一个 big.Word 可以存放多少个比特位，在64位的Ubuntu 20.04操作系统中，wordBits等于64。
+	WordBits = 32 << (uint64(^(big.Word(0))) >> 63)
+	// WordBytes 用来表示一个 big.Word 最多可以存放多少个字节，在64位的Ubuntu 20.04操作系统中，wordBytes等于8。
+	WordBytes = WordBits / 8
 )
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
@@ -278,7 +278,7 @@ func FirstBitSet(i *big.Int) int {
 func ReadBits(bigInt *big.Int, buf []byte) {
 	i := len(buf)
 	for _, word := range bigInt.Bits() {
-		for j := 0; j < wordBytes && i > 0; j++ { // 逐个遍历 big.Word 里的每个字节
+		for j := 0; j < WordBytes && i > 0; j++ { // 逐个遍历 big.Word 里的每个字节
 			i--
 			buf[i] = byte(word) // 取 big.Word 最右边的8个比特构成一个字节
 			word >>= 8          // 当前 big.Word 右移8个比特位
@@ -314,12 +314,12 @@ func PaddedBigBytes(bigInt *big.Int, n int) []byte {
 //	返回的值等于byte(3)。
 func bigEndianByteAt(bigInt *big.Int, n int) byte {
 	words := bigInt.Bits()
-	i := n / wordBytes
+	i := n / WordBytes
 	if i >= len(words) {
 		return byte(0)
 	}
 	word := words[i]
-	shift := 8 * uint(n%wordBytes)
+	shift := 8 * uint(n%WordBytes)
 	return byte(word >> shift)
 }
 
@@ -378,7 +378,7 @@ func S256(x *big.Int) *big.Int {
 func Exp(base, exponent *big.Int) *big.Int {
 	result := big.NewInt(1)
 	for _, word := range exponent.Bits() {
-		for i := 0; i < wordBytes; i++ {
+		for i := 0; i < WordBytes; i++ {
 			if word&1 == 1 {
 				U256(result.Mul(result, base))
 			}
