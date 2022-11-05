@@ -95,7 +95,7 @@ func cachedDecoder(typ reflect.Type) (decoder, error) {
 //
 // 然后利用这个key到 typeCache.cur 缓存区中寻找对应的 typeInfo 实例，如果找不到，就调用 typeCache.generate 方法，
 // 即时生成一个针对typ的 typeInfo 实例，注意，typeCache.generate 方法接受两个参数，分别是 reflect.Type 类型的typ，
-// 另一个是 rlpstruct.Tag 类型的 tag，第一个参数就沿用 info 方法的typ，至于第二个参数，就用一个空的 rlpstruct.Tag{}。
+// 另一个是 rlpstruct.Tag 类型的 tag，第一个参数就沿用 info 方法的typ，至于第二个参数，就用一个空的 rlpstruct.Tag。
 func (tc *typeCache) info(typ reflect.Type) *typeInfo {
 	key := typeKey{Type: typ}
 	cur := tc.cur.Load().(map[typeKey]*typeInfo)
