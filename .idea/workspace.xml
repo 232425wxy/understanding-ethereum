@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/encbuffer.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encbuffer.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/encode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/typecache.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/typecache.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
