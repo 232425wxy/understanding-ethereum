@@ -285,7 +285,8 @@ func (buf *encBuffer) encode(val interface{}) error {
 
 // encReader ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
 //
-// encReader
+// encReader 结构体将 *encBuffer 实例包装起来，该结构体实现了 Read 方法，可以将 *encBuffer 缓存的编码数据读取到
+// 给定的字节切片里。
 type encReader struct {
 	buf    *encBuffer // 我们从 buf 缓冲里读取数据
 	lhpos  int        // 我们正在读取的列表数据的列表头的索引位值
@@ -361,6 +362,193 @@ func (r *encReader) next() []byte {
 		p := r.buf.str[r.strpos:]
 		r.strpos = len(r.buf.str)
 		return p
+	default:
+		return nil
+	}
+}
+
+/*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
+
+// EncodeBuffer ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// EncodeBuffer
+type EncodeBuffer struct {
+	buf       *encBuffer
+	dst       io.Writer
+	ownBuffer bool
+}
+
+// NewEncodeBuffer ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// NewEncodeBuffer 方法根据给定的 io.Writer 生成一个新的 EncodeBuffer。需要注意的是，如果给定的 io.Writer
+// 满足不同的条件，生成的 EncodeBuffer 会有区别：
+//   - 如果给定的 io.Writer 的底层实现是 EncodeBuffer或者是*EncodeBuffer，再或者是*encBuffer，则生成的
+//     EncodeBuffer 实例如下：
+//     EncodeBuffer{buf: encBufferFromWriter(dst), dst: nil, ownBuffer: false}
+//     其中dst就是 NewEncodeBuffer 方法的入参
+//   - 如果给定的 io.Writer 就是普通的writer，则生成的 EncodeBuffer 实例如下：
+//     EncodeBuffer{buf: encBufferPool.Get().(*encBuffer), dst: dst, ownBuffer: true}
+func NewEncodeBuffer(dst io.Writer) EncodeBuffer {
+	var encBuf EncodeBuffer
+	encBuf.Reset(dst)
+	return encBuf
+}
+
+// Reset ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// Reset 方法接受一个实现了 io.Writer 接口的对象实例dst，如果当前 EncodeBuffer.buf 是通过 encBufferFromWriter
+// 方法获得的，那么调用 Reset 方法会panic，如果给定的dst参数不为空，且dst的底层实现是 EncodeBuffer 或 *EncodeBuffer
+// 或 *encBuffer，则重置 EncodeBuffer.buf 为dst，并且 EncodeBuffer.ownBuffer 置为false，到此，直接退出 Reset方
+// 法；否则就从 encBufferPool 里面重新获取一个 *encBuffer 实例，并赋值给 EncodeBuffer.buf，然后将
+// EncodeBuffer.ownBuffer 置为true，最后调用 encBuffer.reset 方法重置 EncodeBuffer.buf。
+func (encBuf *EncodeBuffer) Reset(dst io.Writer) {
+	if encBuf.buf != nil && encBuf.ownBuffer == false {
+		// 无法重置衍生的EncodeBuffer？为什么？
+		// 所谓衍生的 EncodeBuffer，其实就是 EncodeBuffer.buf 是从其他地方衍生过来的，
+		// 如果重置的话，会对其他地方的代码产生影响。
+		panic("can't Reset derived EncodeBuffer")
+	}
+	if dst != nil {
+		if w := encBufferFromWriter(dst); w != nil {
+			*encBuf = EncodeBuffer{buf: w, dst: nil, ownBuffer: false}
+			return
+		}
+	}
+	if encBuf.buf == nil {
+		encBuf.buf = encBufferPool.Get().(*encBuffer)
+		encBuf.ownBuffer = true
+	}
+	encBuf.buf.reset()
+	encBuf.dst = dst
+}
+
+// Write ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// Write 方法接受一个字节切片参数bz，该方法实际上调用 encBuffer.Write 方法实现将bz追加到 encBuffer.str 后面。
+func (encBuf EncodeBuffer) Write(bz []byte) (int, error) {
+	return encBuf.buf.Write(bz)
+}
+
+// Flush ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// Flush 方法将 EncodeBuffer.buf 里面缓存的rlp编码数据全部写入到 EncodeBuffer.dst 中，写完之后，EncodeBuffer.buf
+// 如果是 EncodeBuffer 从 encBufferPool 里面拿的，那就要再把它放回去，并且 EncodeBuffer 会被重置为空，也就是说，
+// Flush 方法只能被调用一次，下次还想调用，就必须在调用前先执行 Reset 方法。
+func (encBuf *EncodeBuffer) Flush() error {
+	var err error
+	if encBuf.dst != nil {
+		err = encBuf.buf.writeTo(encBuf.dst)
+	}
+	if encBuf.ownBuffer {
+		// 如果当前*encBuffer是从encBufferPool里面获取的，那么我们在把*encBuffer里面缓存的数据刷新到 io.Writer
+		// 里面之后，就可以将*encBuffer给释放了
+		encBufferPool.Put(encBuf.buf)
+	}
+	*encBuf = EncodeBuffer{}
+	return err
+}
+
+// ToBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// ToBytes 方法调用 EncodeBuffer.buf.makeBytes() 方法，将编码结果完整的返回出来。
+func (encBuf *EncodeBuffer) ToBytes() []byte {
+	return encBuf.buf.makeBytes()
+}
+
+// AppendToBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// AppendToBytes 方法接受一个字节切片dst作为入参，该方法就是将 EncodeBuffer.buf 内存储的rlp编码结果追加到dst后面。
+func (encBuf *EncodeBuffer) AppendToBytes(dst []byte) []byte {
+	size := encBuf.buf.size()
+	data := make([]byte, size)
+	encBuf.buf.copyTo(data)
+	return append(dst, data...)
+}
+
+// WriteBool ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// WriteBool 方法接受一个bool类型的变量，然后根据其值将其编码到 EncodeBuffer.buf.str 里，如果给的值等于true，那么
+// 就往str里写入0x01，否则写入0x80，0x80表示的是一个空值。
+func (encBuf EncodeBuffer) WriteBool(b bool) {
+	encBuf.buf.writeBool(b)
+}
+
+// WriteUint64 ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// WriteUint64 方法接受一个64位的无符号整数作为输入参数，然后将其编码到 EncodeBuffer.buf.str 里，如果输入的整数大小小于
+// 128，则可以将其看成是一个单独的ASCII码，那么该整数自身就可以作为编码结果写入到str里；如果给定的整数大于或等于128，则会计算
+// 需要多少个字节才能存储这个数，例如需要n个，那么编码结果就是（0x80+n||整数的字节表现形式）；如果给定的整数等于0，则将0x80写
+// 入到str里，代表空值，下面给出三个示例来对该方法的逻辑进行解释：
+//   - 0：append(str, 0x80)
+//   - 123：append(str, byte(123))
+//   - 1024：append(str, []byte{0x80+2, 000000100, 00000000})
+func (encBuf EncodeBuffer) WriteUint64(i uint64) {
+	encBuf.buf.writeUint64(i)
+}
+
+// WriteBigInt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// WriteBigInt 方法接受一个大整数i，i的类型是*big.Int，该方法的作用就是将大整数编码到 EncodeBuffer.buf.str 里。事实上，大整数不
+// 一定就比最大的64位无符号整数大，在这种情况下，我们可以调用 writeUint64 方法将该所谓的大整数编码到str里；但是，如果给定的大整数大于
+// 最大的64位无符号整数，在这种情况下，我们需要将其看成是一个字节切片进行编码，此时该大整数需要超过8个字节来存储。
+func (encBuf EncodeBuffer) WriteBigInt(i *big.Int) {
+	encBuf.buf.writeBigInt(i)
+}
+
+// WriteBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// WriteBytes 方法接受一个字节切片bz，该方法的目的就是将字节切片bz编码到 EncodeBuffer.buf.str 里。当bz满足不同情况时，编码
+// 方式也不同，具体会遇到以下两种方式：
+//   - 给定的字节切片bz长度等于1，并且里面唯一的字节小于或等于0x7F，即127，那么该字节切片（或者说该字节更准确）会被直接追加到str后。
+//   - 给定的字节切片长度大于1，那么会将bz的长度先编码到str里，这里又会遇到两种情况：1.长度小于56；2.长度大于55。面对不同的情况，
+//     如何对字节长度进行编码必须遵守以下准则：
+//     · 当长度size小于56，则将0x80+size的值追加到str后
+//     · 当长度size大于55，例如1024，存储1024最少需要2个字节，并且这两个字节分别是00000100和00000000，那么就将0xB7+2和这
+//     两个字节追加到str后，字节的长度被编码到str里后，剩下的工作则是直接将切片bz追加到str后。
+func (encBuf EncodeBuffer) WriteBytes(bz []byte) {
+	encBuf.buf.writeBytes(bz)
+}
+
+// WriteString ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// WriteString 方法接受一个字符串参数s，该方法的作用就是将s编码到 EncodeBuffer.buf.str 里，实际上，该方法的逻辑是调用了如下
+// 函数，来实现将s编码到str里：
+//
+//	EncodeBuffer.buf.writeString(s)
+func (encBuf EncodeBuffer) WriteString(s string) {
+	encBuf.buf.writeString(s)
+}
+
+// ListStart ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// ListStart 方法用来往 EncodeBuffer.buf.lHeads 里添加一个 listHead 实例，该方法在编码列表数据前被调用，用来为编码列表数据
+// 作准备，实际上，该方法的逻辑通过调用如下函数来实现：
+// 	EncodeBuffer.buf.listStart()
+func (encBuf EncodeBuffer) ListStart() int {
+	return encBuf.buf.listStart()
+}
+
+// ListEnd ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// ListEnd 方法接受一个整型参数index，该方法在编码列表数据结束之后被调用，其目的就是更新 EncodeBuffer.buf.lHeads 上给定
+// index索引位值处的 listHead.size 和 EncodeBuffer.buf.lHeadsSize 两个字段。实际上，该方法的逻辑通过调用如下函数来实现：
+//	EncodeBuffer.buf.listEnd(index)
+func (encBuf EncodeBuffer) ListEnd(index int) {
+	encBuf.buf.listEnd(index)
+}
+
+// encBufferFromWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/5|
+//
+// encBufferFromWriter 方法接受一个实现了 io.Writer 接口的writer，如果该writer的底层实现是EncodeBuffer或者
+// 是*EncodeBuffer，则返回 EncodeBuffer.buf，如果该writer的底层实现是 *encBuffer，则返回它自身。
+func encBufferFromWriter(w io.Writer) *encBuffer {
+	switch w := w.(type) {
+	case EncodeBuffer:
+		return w.buf
+	case *EncodeBuffer:
+		return w.buf
+	case *encBuffer:
+		return w
 	default:
 		return nil
 	}
