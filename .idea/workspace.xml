@@ -4,42 +4,42 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="">
+    <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/understanding-ethereum.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/understanding-ethereum.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/typecache_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/typecache_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Go File" />
-      </list>
-    </option>
-  </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../language/go1.19/go" />
+  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../../app/sdk/go1.19.3" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GoLibraries">
-    <option name="indexEntireGoPath" value="true" />
+    <option name="urls">
+      <list>
+        <option value="file://$PROJECT_DIR$/../.." />
+      </list>
+    </option>
+    <option name="useGoPathFromSystemEnvironment" value="false" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
-  </component>
-  <component name="ProjectId" id="2Gf9Rfvj9AP6DJ9TIKxq41sVmyK" />
+  <component name="ProjectId" id="2HAcU6iUjEtbL5mOAEUnZNkNDTw" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.format.on.save.advertiser.fired&quot;: &quot;true&quot;,
@@ -47,88 +47,34 @@
     &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;configurable..is.expanded&quot;: &quot;true&quot;,
+    &quot;configurable.GoLibrariesConfigurable.is.expanded&quot;: &quot;true&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/rain/lab/code/go/src/go-ethereum&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/learn/code/go/src/understanding-ethereum&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editing.templates&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;go.vgo&quot;
   }
 }</component>
-  <component name="RunManager" selected="Go Test.TestPutHead in github.com/232425wxy/understanding-ethereum/rlp">
-    <configuration name="TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager">
+    <configuration name="go build understanding-ethereum" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
       <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/rlp" />
-      <root_directory value="$PROJECT_DIR$" />
+      <working_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
+      <package value="understanding-ethereum" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestCurAtomicValue\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestIntSize in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/rlp" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestIntSize\E$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="TestPutHead in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/rlp" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestPutHead\E$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="TestPutInt in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/rlp" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestPutInt\E$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="TestSyncPool in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/rlp" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestSyncPool\E$" />
-      <method v="2" />
-    </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Go Test.TestPutHead in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestIntSize in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestPutInt in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestSyncPool in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
