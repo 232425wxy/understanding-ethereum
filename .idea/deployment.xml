@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" promptOnRemoteOverwrite="CHECK_CONTENT" serverName="wxy" createEmptyFolders="true" exclude=".svn;.cvs;.idea;.DS_Store;.hg;*.hprof;*.pyc" notifyRemoteChanges="true">
+    <serverData>
+      <paths name="wxy">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/lab/code/go/src/understanding-ethereum" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
