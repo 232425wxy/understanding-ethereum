@@ -2,10 +2,10 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="a601518f-0a00-49a3-a613-27d211d7fd00" name="wxy" url="http://192.168.137.10">
-        <fileTransfer rootFolder="/home/wxy" accessType="SFTP" host="192.168.137.10" port="22" sshConfigId="6e92b284-d476-43db-b3d7-0f1697738981" sshConfig="wxy@192.168.137.10:22 password">
+      <webServer id="fe42890c-d8e3-429f-bb3e-a7f065c83a07" name="cosmic" url="http://192.168.137.72">
+        <fileTransfer rootFolder="/home/cosmic/wxy" accessType="SFTP" host="192.168.137.72" port="22" sshConfigId="89789723-83a8-4055-9444-4a29a6288fb0" sshConfig="cosmic@192.168.137.72:22 password">
           <advancedOptions>
-            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>

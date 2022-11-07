@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" promptOnRemoteOverwrite="CHECK_CONTENT" serverName="wxy" createEmptyFolders="true" exclude=".svn;.cvs;.idea;.DS_Store;.hg;*.hprof;*.pyc" notifyRemoteChanges="true">
+  <component name="PublishConfigData" promptOnRemoteOverwrite="CHECK_CONTENT" serverName="cosmic" createEmptyFolders="true" exclude=".svn;.cvs;.idea;.DS_Store;.hg;*.hprof;*.pyc" notifyRemoteChanges="true">
     <serverData>
-      <paths name="wxy">
+      <paths name="cosmic">
         <serverdata>
           <mappings>
-            <mapping deploy="/lab/code/go/src/understanding-ethereum" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/understanding-ethereum" />
           </mappings>
         </serverdata>
       </paths>

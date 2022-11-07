@@ -5,13 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/rlp/raw_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/webServers.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/typecache_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/typecache_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/decode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/decode.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/raw.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/raw.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
   </component>
   <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../language/go" />
   <component name="Git.Settings">
@@ -36,6 +47,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
@@ -61,7 +73,7 @@
     "settings.editor.selected.configurable": "go.vgo"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Go Build.go build understanding-ethereum">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$" />
@@ -81,6 +93,30 @@
       <filePath value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
+    <configuration name="TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/rlp" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestCurAtomicValue\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestSplit in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/rlp" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestSplit\E$" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$" />
@@ -92,6 +128,12 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestSplit in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">

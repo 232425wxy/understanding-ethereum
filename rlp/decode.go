@@ -1,8 +1,19 @@
 package rlp
 
 import (
+	"errors"
 	"github.com/232425wxy/understanding-ethereum/rlp/internal/rlpstruct"
 	"reflect"
+)
+
+/*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
+
+// 定义全局错误
+
+var (
+	ErrCanonSize      = errors.New("rlp: non-canonical size information")
+	ErrValueTooLarge  = errors.New("rlp: value size exceeds available input length")
+	ErrExpectedString = errors.New("rlp: expected String or Byte")
 )
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/

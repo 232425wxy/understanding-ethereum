@@ -1,6 +1,9 @@
 package rlp
 
-import "reflect"
+import (
+	"io"
+	"reflect"
+)
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
@@ -11,4 +14,166 @@ import "reflect"
 //	RawValue代表一个已编码的RLP值，可用于延迟RLP解码或预先计算一个编码。请注意，解码器并不验证RawValues的内容是否是有效的RLP。
 type RawValue []byte
 
-var rawValueTyp = reflect.TypeOf(RawValue{})
+// rawValueType ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// rawValueType = reflect.TypeOf(RawValue{})
+var rawValueType = reflect.TypeOf(RawValue{})
+
+/*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
+
+// ListSize ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// ListSize 方法接受一个64位无符号整型参数contentSize，contentSize表示的是对一个列表进行编码后，除去
+// 头剩下的编码内容的长度。这个方法在 Block 和 Transaction 两个结构体实现 DecodeRLP 方法时被调用。
+func ListSize(contentSize uint64) uint64 {
+	return uint64(headSize(contentSize)) + contentSize
+}
+
+// IntSize ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// IntSize 方法接受一个64位无符号整型参数x，该方法的作用是计算对x进行rlp编码后得到的结果的字节长度。对于值
+// 小于128的整数，可以将其看成是一个单独的ASCII码，根据rlp编码规则，所以仅需1个字节就可以存储编码结果；如果
+// 值大于128，例如1025，1025需要两个字节来存储表示：00000100,00000001，那么编码1025这个数字就需要3个字
+// 节：[128+2, 4, 1]->[10000010, 00000100, 00000001]。
+func IntSize(x uint64) int {
+	if x < 0x80 {
+		return 1
+	}
+	return 1 + intSize(x)
+}
+
+// Split ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// Split 方法接受一个字节切片bz作为入参，bz是一个rlp编码结果，Split 方法解析bz，返回被编码的对象是何种类型，
+// Byte 、 String 或 List，然后第二个参数返回的是编码结果除编码前缀外剩下的编码内容，第三个参数返回的是其他
+// 编码数据，第四个参数返回的是 Split 方法在执行过程中可能遇到的错误，这里只会遇到两种错误，一个是 ErrCanonSize，
+// 另一个是 ErrValueTooLarge。
+//
+//	给一个例子：bz = [204 131 97 97 97 8 198 133 72 101 102 101 105]
+//	对给定的bz进行解析，返回的结果将是：List, [131 97 97 97 8 198 133 72 101 102 101 105], [], nil
+func Split(bz []byte) (k Kind, content, rest []byte, err error) {
+	k, ps, cs, err := readKind(bz)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	return k, bz[ps : ps+cs], bz[ps+cs:], nil
+}
+
+// SplitString ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// SplitString 与 Split 方法类似，不同的地方在于，SplitString 方法知道自己要解析的对象bz是一个对象字符串进
+// 行rlp编码的结果，所以，如果解析得到编码类型不是 String，则会报错。然后该方法的返回值与 Split 的后三个返回值
+// 具有相同的含义。
+func SplitString(bz []byte) (content, rest []byte, err error) {
+	k, content, rest, err := Split(bz)
+	if err != nil {
+		return nil, bz, err
+	}
+	if k == List {
+		return nil, bz, ErrExpectedString
+	}
+	return content, rest, nil
+}
+
+/*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
+
+// readKind ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// readKind 方法接受一个参数bz []byte，bz是一个rlp编码数据，bz的第一个字节是编码头，编码头的取值分5个段：
+//  1. [0, 127]，表示被编码的对象是一个单独的ASCII码
+//  2. [128, 183]，表示被编码的对象是一个长度小于56的字符串
+//  3. [184, 191]，表示被编码的对象是一个长度大于55的字符串
+//  4. [192, 247]，表示被编码的对象是一个列表，且编码结果的长度小于56
+//  5. [248, 255]，表示被编码的对象是一个列表，且编码结果的长度大于55
+//
+// 根据编码头的取值情况，判断被编码的对象是何种类型，如果被编码的对象是一个ASCII码，则返回 Byte 类型，如果
+// 被编码的对象是一个字符串，则返回 String 类型，否则返回 List 类型。该方法返回的第二个参数表示编码前缀所
+// 占的字节个数，所谓编码前缀，由编码头和长度编码组成，长度编码只在长度大于55时才会被涉及。该方法返回的第三个
+// 参数表示编码结果去除编码前缀后剩下的内容编码的长度，最后一个返回值表示 readKind 方法在执行过程中可能遇到
+// 的错误，在这里，只可能出现两种错误，一个是 ErrCanonSize，另一个是 ErrValueTooLarge。
+func readKind(bz []byte) (k Kind, prefixSize, contentSize uint64, err error) {
+	if len(bz) == 0 {
+		return 0, 0, 0, io.ErrUnexpectedEOF
+	}
+	b := bz[0]
+	switch {
+	case b < 0x80:
+		// 编码内容是单独的ASCII码：[本身]
+		k = Byte
+		prefixSize = 0
+		contentSize = 1
+	case b < 0xB8:
+		// 长度大于1小于56的字符串：[编码头|内容编码]
+		k = String
+		prefixSize = 1
+		contentSize = uint64(b - 0x80)
+		if contentSize == 1 && len(bz) > 1 && bz[1] < 128 {
+			// 正常情况下是不会出现这个错误的
+			return 0, 0, 0, ErrCanonSize
+		}
+	case b < 0xC0:
+		// 长度大于55的字符串：[编码头|长度编码|内容编码]
+		k = String
+		prefixSize = 1 + uint64(b-0xB7) // headSize是[编码头|长度编码]所占的字节数
+		contentSize, err = readSize(bz[1:], byte(prefixSize-1))
+	case b < 0xF8:
+		// 编码结果长度大于1小于56的列表：[编码头|内容编码]
+		k = List
+		prefixSize = 1
+		contentSize = uint64(b - 0xC0)
+	default:
+		// 编码结果长度大于55的列表：[编码头|长度编码|内容编码]
+		k = List
+		prefixSize = uint64(b-0xF7) + 1
+		contentSize, err = readSize(bz[1:], byte(prefixSize-1))
+	}
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	if contentSize > uint64(len(bz))-prefixSize {
+		// 计算出来的内容编码长度过长！
+		return 0, 0, 0, ErrValueTooLarge
+	}
+
+	return k, prefixSize, contentSize, nil
+}
+
+// readSize ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|
+//
+// readSize 接受两个参数：bz []byte和length byte，当我们对一个长度大于55的字符串进行rlp编码，或者编码列表得到长度大于
+// 55的编码结果，那么完整的编码结果的结构如下：[编码头|长度编码|内容编码]，该方法接受的第一个参数bz存储着[长度编码|内容编码]，
+// length参数标记了[长度编码]占用了多少个字节空间，正常情况下，len([长度编码])=length。例如我们编码一个长度为356的字符串数
+// 据，356用二进制表示为：00000001,01100100，这个二进制需要两个字节去存储，这两个字节分别是byte(1)和byte(100)，因此，
+// [长度编码]其实就是[1, 100]，那么 readSize 的功能就是执行以下步骤：
+//
+//	byte(1)<<8 | byte(100)
+//
+// 得到结果356，并返回出去。
+func readSize(bz []byte, length byte) (uint64, error) {
+	if int(length) > len(bz) {
+		return 0, io.ErrUnexpectedEOF
+	}
+	var s uint64
+	switch length {
+	case 1:
+		s = uint64(bz[0])
+	case 2:
+		s = uint64(bz[0])<<8 | uint64(bz[1])
+	case 3:
+		s = uint64(bz[0])<<16 | uint64(bz[1])<<8 | uint64(bz[2])
+	case 4:
+		s = uint64(bz[0])<<24 | uint64(bz[1])<<16 | uint64(bz[2])<<8 | uint64(bz[3])
+	case 5:
+		s = uint64(bz[0])<<32 | uint64(bz[1])<<24 | uint64(bz[2])<<16 | uint64(bz[3])<<8 | uint64(bz[4])
+	case 6:
+		s = uint64(bz[0])<<40 | uint64(bz[1])<<32 | uint64(bz[2])<<24 | uint64(bz[3])<<16 | uint64(bz[4])<<8 | uint64(bz[5])
+	case 7:
+		s = uint64(bz[0])<<48 | uint64(bz[1])<<40 | uint64(bz[2])<<32 | uint64(bz[3])<<24 | uint64(bz[4])<<16 | uint64(bz[5])<<8 | uint64(bz[6])
+	case 8:
+		s = uint64(bz[0])<<56 | uint64(bz[1])<<48 | uint64(bz[2])<<40 | uint64(bz[3])<<32 | uint64(bz[4])<<24 | uint64(bz[5])<<16 | uint64(bz[6])<<8 | uint64(bz[7])
+	}
+	if s < 56 || bz[0] == 0 {
+		return 0, ErrCanonSize
+	}
+	return s, nil
+}
