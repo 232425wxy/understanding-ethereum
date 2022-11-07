@@ -24,7 +24,7 @@ func TestCurAtomicValue(t *testing.T) {
 	cur.Store(m2)
 	old2 := cur.Load().(map[int][]string)
 	t.Log(old2[2][1])
-	m2[0] = []string{"李星云"}
+	m2[0] = []string{"不良人"}
 	old2 = cur.Load().(map[int][]string)
 	t.Log(old2[2][0])
 }
