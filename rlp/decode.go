@@ -14,6 +14,13 @@ var (
 	ErrCanonSize      = errors.New("rlp: non-canonical size information")
 	ErrValueTooLarge  = errors.New("rlp: value size exceeds available input length")
 	ErrExpectedString = errors.New("rlp: expected String or Byte")
+	ErrCanonInt       = errors.New("rlp: non-canonical integer format")
+)
+
+// 定义内部错误
+
+var (
+	errUintOverflow = errors.New("rlp: uint overflow")
 )
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/

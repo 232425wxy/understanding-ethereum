@@ -13,3 +13,12 @@ func TestSplit(t *testing.T) {
 	assert.Equal(t, []byte{}, r)
 	assert.Equal(t, nil, err)
 }
+
+func TestSplitUint64(t *testing.T) {
+	bz := []byte{129, 130, 97, 98, 99}
+	x, rest, err := SplitUint64(bz)
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(x), x)
+	t.Log(rest)
+	assert.Equal(t, "abc", string(rest))
+}
