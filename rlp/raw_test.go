@@ -22,3 +22,10 @@ func TestSplitUint64(t *testing.T) {
 	t.Log(rest)
 	assert.Equal(t, "abc", string(rest))
 }
+
+func TestCountValues(t *testing.T) {
+	bz := []byte{129, 130, 12, 132, 97, 97, 97, 97}
+	num, err := CountValues(bz)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, num)
+}

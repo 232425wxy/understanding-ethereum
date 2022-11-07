@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rlp/decode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/decode.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rlp/raw.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/raw.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/raw_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/raw_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,6 +91,18 @@
       <filePath value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
+    <configuration name="TestCountValues in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/rlp" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestCountValues\E$" />
+      <method v="2" />
+    </configuration>
     <configuration name="TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
@@ -114,6 +127,18 @@
       <pattern value="^\QTestSplit\E$" />
       <method v="2" />
     </configuration>
+    <configuration name="TestSplitUint64 in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/rlp" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestSplitUint64\E$" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$" />
@@ -127,6 +152,8 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestCountValues in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestSplitUint64 in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestSplit in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" />
       </list>
@@ -149,5 +176,16 @@
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/rlp/raw_test.go</url>
+          <line>18</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

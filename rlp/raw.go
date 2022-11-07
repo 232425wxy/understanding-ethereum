@@ -111,6 +111,39 @@ func SplitUint64(bz []byte) (x uint64, rest []byte, err error) {
 	}
 }
 
+// SplitList ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// SplitList 与 SplitString 方法作用类似，该方法明确知道bz里面含有rlp编码列表部分的内容，如果解析出来
+// 的类型显式不是 List，则返回 ErrExpectedList 错误。
+func SplitList(bz []byte) (content, rest []byte, err error) {
+	kind, content, rest, err := Split(bz)
+	if err != nil {
+		return nil, bz, err
+	}
+	if kind != List {
+		return nil, bz, ErrExpectedList
+	}
+	return content, rest, nil
+}
+
+// CountValues ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// CountValues 接受一个rlp编码结果bz，该方法的功能就是计算有多少个值被编码进bz里面，例如：
+//
+//	给定bz=[129 130 12 132 97 97 97 97]，经过计算我们发现有三个值被编码进去了，分别是数字130、数字12
+//	以及字符串"aaaa"。
+func CountValues(bz []byte) (int, error) {
+	i := 0
+	for ; len(bz) > 0; i++ {
+		_, prefixSize, contentSize, err := readKind(bz)
+		if err != nil {
+			return 0, err
+		}
+		bz = bz[prefixSize+contentSize:]
+	}
+	return i, nil
+}
+
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
 // readKind ♏ |作者：吴翔宇| 🍁 |日期：2022/11/7|

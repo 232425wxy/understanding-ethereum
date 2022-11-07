@@ -14,6 +14,7 @@ var (
 	ErrCanonSize      = errors.New("rlp: non-canonical size information")
 	ErrValueTooLarge  = errors.New("rlp: value size exceeds available input length")
 	ErrExpectedString = errors.New("rlp: expected String or Byte")
+	ErrExpectedList   = errors.New("rlp: expected List")
 	ErrCanonInt       = errors.New("rlp: non-canonical integer format")
 )
 
