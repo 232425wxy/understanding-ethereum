@@ -341,7 +341,7 @@ func (r *encReader) next() []byte {
 	case r.lhpos < len(r.buf.lHeads):
 		// 目前还没读取到最后一个列表头，获取当前正在读取的列表数据的头
 		head := r.buf.lHeads[r.lhpos]
-		// 计算在当前列表头之前还有多少数据未被读取，该逻辑设计的很巧妙，因为我们知道，第一个列表头的offset一定等于0，所以，
+		// 计算在当前列表头之前还有多少数据未被读取，该逻辑设计的很巧妙，因为我们知道，第一个列表头的offset一般等于0，所以，
 		// 第一次返回的要被读取的数据就是列表头的编码数据，而不是str缓冲区里的数据，因此strpos还会等于0，接下来，第二个列表
 		// 头的offset一定大于0，此时我们就知道在第二个列表头前，str缓冲区里有一部分数据未被读取，而该段数据正是第一个列表头
 		// 后面跟着的数据
@@ -523,7 +523,8 @@ func (encBuf EncodeBuffer) WriteString(s string) {
 //
 // ListStart 方法用来往 EncodeBuffer.buf.lHeads 里添加一个 listHead 实例，该方法在编码列表数据前被调用，用来为编码列表数据
 // 作准备，实际上，该方法的逻辑通过调用如下函数来实现：
-// 	EncodeBuffer.buf.listStart()
+//
+//	EncodeBuffer.buf.listStart()
 func (encBuf EncodeBuffer) ListStart() int {
 	return encBuf.buf.listStart()
 }
@@ -532,6 +533,7 @@ func (encBuf EncodeBuffer) ListStart() int {
 //
 // ListEnd 方法接受一个整型参数index，该方法在编码列表数据结束之后被调用，其目的就是更新 EncodeBuffer.buf.lHeads 上给定
 // index索引位值处的 listHead.size 和 EncodeBuffer.buf.lHeadsSize 两个字段。实际上，该方法的逻辑通过调用如下函数来实现：
+//
 //	EncodeBuffer.buf.listEnd(index)
 func (encBuf EncodeBuffer) ListEnd(index int) {
 	encBuf.buf.listEnd(index)

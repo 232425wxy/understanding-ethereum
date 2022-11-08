@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/raw.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/raw.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/raw_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/raw_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/encbuffer.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encbuffer.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/encode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

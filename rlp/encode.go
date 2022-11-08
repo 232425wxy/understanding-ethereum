@@ -1,8 +1,10 @@
 package rlp
 
 import (
+	"errors"
 	"github.com/232425wxy/understanding-ethereum/rlp/internal/rlpstruct"
 	"io"
+	"math/big"
 	"reflect"
 )
 
@@ -18,6 +20,11 @@ type Encoder interface {
 }
 
 var encoderInterface = reflect.TypeOf(new(Encoder)).Elem()
+
+// ErrNegativeBigInt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// ErrNegativeBigInt 被编码的大整数是一个负数时，会报该错误。
+var ErrNegativeBigInt = errors.New("rlp: cannot encode negative big.Int")
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
@@ -106,6 +113,69 @@ func putHead(buf []byte, smallTag, largeTag byte, size uint64) int {
 func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 	return nil, nil
 }
+
+// writeRawValue ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// writeRawValue 方接受两个参数：即将被编码的 RawValue 对象的 reflect.Value 和一个 *encBuffer 实例，该方法实际上就
+// 是将 RawValue 对象本身追加到 *encBuffer.str 后面。
+func writeRawValue(val reflect.Value, buf *encBuffer) error {
+	buf.str = append(buf.str, val.Bytes()...)
+	return nil
+}
+
+// writeBigIntPtr ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// writeBigIntPtr 方法接受两个参数：即将被编码的 *big.Int 对象的 reflect.Value 和一个 *encBuffer 实例，注意这里提到的
+// *big.Int 不是指针类型。该方法会调用 *encBuffer.writeBigInt 方法将给定的大整数进行编码，如果我们给定的大整数是一个负数，则
+// 会报错，另外如果给定的 *big.Int 是一个空指针，则会把该大整数看成是"0"进行编码。
+func writeBigIntPtr(val reflect.Value, buf *encBuffer) error {
+	ptr := val.Interface().(*big.Int)
+	if ptr == nil {
+		buf.str = append(buf.str, 0x80)
+		return nil
+	}
+	if ptr.Sign() == -1 {
+		return ErrNegativeBigInt
+	}
+	buf.writeBigInt(ptr)
+	return nil
+}
+
+// writeBigIntNoPtr ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// writeBigIntNoPtr 方法接受两个参数：即将被编码的 big.Int 对象的 reflect.Value 和一个 *encBuffer 实例，注意这里提到的
+// big.Int 不是指针类型。该方法会调用 *encBuffer.writeBigInt 方法将给定的大整数进行编码，如果我们给定的大整数是一个负数，则
+// 会报错。
+func writeBigIntNoPtr(val reflect.Value, buf *encBuffer) error {
+	i := val.Interface().(big.Int)
+	if i.Sign() == -1 {
+		return ErrNegativeBigInt
+	}
+	buf.writeBigInt(&i)
+	return nil
+}
+
+// writeUint ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// writeUint 接受两个参数：uint类型整数的 reflect.Value 和一个 *encBuffer 实例，该方法调用 *encBuffer.writeUint64 方法
+// 将给定的整数编码进 *encBuffer.str 里。
+func writeUint(val reflect.Value, buf *encBuffer) error {
+	buf.writeUint64(val.Uint())
+	return nil
+}
+
+// writeBool ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// writeBool 方法接受两个参数：bool 的 reflect.Value 和一个 *encBuffer 实例，该方法调用 *encBuffer.writeBool 方法将布尔
+// 值编码到 *encBuffer.str 里。
+func writeBool(val reflect.Value, buf *encBuffer) error {
+	buf.writeBool(val.Bool())
+	return nil
+}
+
+// writeString ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
+//
+// writeString 方法接受两个参数：string 字符串的 reflect.Value 和一个 *encBuffer 实例，该方法将
 
 // putInt ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
 //
