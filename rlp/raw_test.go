@@ -29,3 +29,10 @@ func TestCountValues(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 3, num)
 }
+
+func TestAppendUint64(t *testing.T) {
+	bz := []byte{129, 137}
+	var i uint64 = 45678
+	res := AppendUint64(bz, i)
+	t.Log(res)
+}
