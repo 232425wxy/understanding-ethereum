@@ -67,3 +67,54 @@ func TestMakePtrWriter(t *testing.T) {
 	w(reflect.ValueOf(ptrptr), buf)
 	t.Log(buf.str)
 }
+
+type Cat struct {
+	Name string
+}
+
+func TestCanAddr(t *testing.T) {
+	c := &Cat{Name: "Tom"}
+	val := reflect.ValueOf(c)
+	t.Log(val.Elem().CanAddr())
+	assert.Equal(t, val.Elem().Addr(), val)
+	//assert.Equal(t, reflect.PtrTo(val.Elem().Type()), val)
+	val1 := reflect.ValueOf(*c)
+	t.Log(val1.CanAddr())
+}
+
+func makeByteArrayWriter_(typ reflect.Type) writer {
+	switch typ.Len() {
+	case 0:
+		return writeLengthZeroByteArray
+	case 1:
+		return writeLengthOneByteArray
+	default:
+		return func(value reflect.Value, buffer *encBuffer) error {
+			buffer.encodeStringHeader(value.Len())
+			for i := 0; i < value.Len(); i++ {
+				b := byte(value.Index(i).Uint())
+				buffer.str = append(buffer.str, b)
+			}
+			return nil
+		}
+	}
+}
+
+func TestEncodeByteArray(t *testing.T) {
+	arr := [10]byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'}
+	typ := reflect.TypeOf(arr)
+	val := reflect.ValueOf(arr)
+	w1 := makeByteArrayWriter(typ)
+	w2 := makeByteArrayWriter_(typ)
+
+	buf1 := getEncBuffer()
+	buf2 := getEncBuffer()
+
+	err1 := w1(val, buf1)
+	assert.Nil(t, err1)
+	err2 := w2(val, buf2)
+	assert.Nil(t, err2)
+
+	assert.Equal(t, buf1.str, buf2.str)
+	t.Log(buf1.str, "\n", buf2.str)
+}

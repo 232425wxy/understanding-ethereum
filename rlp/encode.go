@@ -263,7 +263,78 @@ func makePtrWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 
 // makeEncoderWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
 //
-// makeEncoderWriter
+// makeEncoderWriter 方法接受一个参数：某种实现 Encoder 接口的 reflect.Type，然后调用该类型自身实现的 EncodeRLP
+// 方法对数据自身进行编码。
+func makeEncodeWriter(typ reflect.Type) writer {
+	if typ.Implements(encoderInterface) {
+		return func(value reflect.Value, buffer *encBuffer) error {
+			return value.Interface().(Encoder).EncodeRLP(buffer)
+		}
+	}
+	var w writer = func(value reflect.Value, buffer *encBuffer) error {
+		if !value.CanAddr() {
+			return fmt.Errorf("rlp: unadressable value of type %v, EncodeRLP is pointer method", value.Type())
+		}
+		return value.Addr().Interface().(Encoder).EncodeRLP(buffer)
+	}
+	return w
+}
+
+// makeByteArrayWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// makeByteArrayWriter 方法接受某个字节数组的 reflect.Type，该方法为字节数组生成一个编码器，对于长度为0的数组，其编码结果就是0x80，
+// 对于长度为1的数组，其编码结果分两种情况，如果数组中存储的唯一字节小于128，将按照ASCII码编码方式进行编码，否则将其看成长度为1的字符串进
+// 行编码，对于长度大于1的数组，官方实现是将其转换为字节切片后再进行编码，我们这里做了改动，是直接将将数组里的内容编码到 *encBuffer.str 里。
+func makeByteArrayWriter(typ reflect.Type) writer {
+	switch typ.Len() {
+	case 0:
+		return writeLengthZeroByteArray
+	case 1:
+		return writeLengthOneByteArray
+	default:
+		// 这个地方我们不妨用自己设计的逻辑去实现，官方实现请看：
+		// https://github.com/ethereum/go-ethereum/blob/972007a517c49ee9e2a359950d81c74467492ed2/rlp/encode.go#L218
+		return func(value reflect.Value, buffer *encBuffer) error {
+			buffer.encodeStringHeader(value.Len())
+			for i := 0; i < value.Len(); i++ {
+				b := byte(value.Index(i).Uint())
+				buffer.str = append(buffer.str, b)
+			}
+			return nil
+		}
+	}
+}
+
+// writeLengthZeroByteArray ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// writeLengthZeroByteArray 方法用于实现 writer 函数，该方法的作用是为长度为0的字节数组生成编码器，
+// 对于长度为0的字节数组，其内容是空的，因此它的编码结果就是[0x80]。
+func writeLengthZeroByteArray(val reflect.Value, buf *encBuffer) error {
+	buf.str = append(buf.str, 0x80)
+	return nil
+}
+
+// writeLengthOneByteArray ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// writeLengthOneByteArray 方法用于实现 writer 函数，该方法的作用是为长度为1的字节数组生成编码器，对于
+// 长度为1的字节数组，它存储的唯一字节存在两种情况，大于127或者小于128，对于大于127的字节，会将其看成长度是1
+// 的字符串，而对于小于128的字节，会将其看成单个ASCII码，对于以上两种情况，会采用不同的编码手段，相信不用说也
+// 能知道会采用哪两种手段。下面方法的实现和官方有些不一样，可以看官方的实现方法：
+//
+//	https://github.com/ethereum/go-ethereum/blob/972007a517c49ee9e2a359950d81c74467492ed2/rlp/encode.go#L240
+func writeLengthOneByteArray(val reflect.Value, buf *encBuffer) error {
+	b := val.Bytes()
+	if b[0] < byte(0x80) {
+		buf.str = append(buf.str, b[0])
+	} else {
+		buf.str = append(buf.str, 0x81, b[0])
+	}
+	return nil
+}
+
+// makeSliceWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// makeSliceWriter
 
 // putInt ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
 //
