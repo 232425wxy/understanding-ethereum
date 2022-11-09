@@ -11,6 +11,54 @@ import (
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
+// 全局API
+
+// Encode ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// Encode 方法接受两个参数：第一个参数是一个 io.Writer，编码结果会被写入到writer里，第二个参数是任意类型的数据，
+// 这个给定的数据就是要被编码的数据。该方法的返回值表明在编码过程中是否出现错误。
+func Encode(w io.Writer, x interface{}) error {
+	if buf := encBufferFromWriter(w); buf != nil {
+		return buf.encode(x)
+	}
+	buf := getEncBuffer()
+	defer encBufferPool.Put(buf)
+	if err := buf.encode(x); err != nil {
+		return err
+	}
+	return buf.writeTo(w)
+}
+
+// EncodeToBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// EncodeToBytes 方法接受一个入参：任意类型的数据x，x是要被编码的数据，返回值有两个，第一个返回值表示
+// 编码结果，第二个返回值表示编码过程中可能出现的错误。
+func EncodeToBytes(x interface{}) ([]byte, error) {
+	buf := getEncBuffer()
+	defer encBufferPool.Put(buf)
+	if err := buf.encode(x); err != nil {
+		return nil, err
+	}
+	return buf.makeBytes(), nil
+}
+
+// EncodeToReader ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// EncodeToReader 方法接受一个入参：任意类型的数据x，x是要被编码的数据，返回值有三个，第一个返回值表示
+// 编码结果的长度（字节个数），第二个参数返回的是一个 *encReader 实例，该实例实现了 Read 方法，Read 方
+// 法接受一个字节切片作为入参，然后将编码结果读取到给定的字节切片中，该方法用于网络传输数据，第三个参数表示
+// 编码过程中可能遇到的错误。
+func EncodeToReader(x interface{}) (size int, r io.Reader, err error) {
+	buf := getEncBuffer()
+	if err = buf.encode(x); err != nil {
+		encBufferPool.Put(buf)
+		return 0, nil, err
+	}
+	return buf.size(), &encReader{buf: buf}, nil
+}
+
+/*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
+
 // 定义 Encoder 接口
 
 // Encoder ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
@@ -114,11 +162,33 @@ func putHead(buf []byte, smallTag, largeTag byte, size uint64) int {
 func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 	kind := typ.Kind()
 	switch {
+	case typ == rawValueType:
+		return writeRawValue, nil
+	case typ.AssignableTo(reflect.PtrTo(reflect.TypeOf(big.Int{}))):
+		return writeBigIntPtr, nil
+	case typ.AssignableTo(reflect.TypeOf(big.Int{})):
+		return writeBigIntNoPtr, nil
 	case isUint(kind):
 		return writeUint, nil
+	case kind == reflect.Bool:
+		return writeBool, nil
+	case kind == reflect.String:
+		return writeString, nil
+	case kind == reflect.Slice && isByte(typ.Elem()):
+		return writeBytes, nil
+	case kind == reflect.Interface:
+		return writeInterface, nil
 	case kind == reflect.Ptr:
 		// 指针可能是指针的指针，因此我们需要递归地去发现该指针所指向的数据类型
 		return makePtrWriter(typ, tag)
+	case reflect.PtrTo(typ).Implements(encoderInterface):
+		return makeEncodeWriter(typ)
+	case kind == reflect.Array && isByte(typ.Elem()):
+		return makeByteArrayWriter(typ)
+	case kind == reflect.Slice || kind == reflect.Array:
+		return makeSliceWriter(typ, tag)
+	case kind == reflect.Struct:
+		return makeStructWriter(typ)
 	default:
 		return nil, fmt.Errorf("rlp: type %v is not RLP-serializable", typ)
 	}
@@ -265,11 +335,11 @@ func makePtrWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 //
 // makeEncoderWriter 方法接受一个参数：某种实现 Encoder 接口的 reflect.Type，然后调用该类型自身实现的 EncodeRLP
 // 方法对数据自身进行编码。
-func makeEncodeWriter(typ reflect.Type) writer {
+func makeEncodeWriter(typ reflect.Type) (writer, error) {
 	if typ.Implements(encoderInterface) {
 		return func(value reflect.Value, buffer *encBuffer) error {
 			return value.Interface().(Encoder).EncodeRLP(buffer)
-		}
+		}, nil
 	}
 	var w writer = func(value reflect.Value, buffer *encBuffer) error {
 		if !value.CanAddr() {
@@ -277,7 +347,7 @@ func makeEncodeWriter(typ reflect.Type) writer {
 		}
 		return value.Addr().Interface().(Encoder).EncodeRLP(buffer)
 	}
-	return w
+	return w, nil
 }
 
 // makeByteArrayWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
@@ -285,12 +355,12 @@ func makeEncodeWriter(typ reflect.Type) writer {
 // makeByteArrayWriter 方法接受某个字节数组的 reflect.Type，该方法为字节数组生成一个编码器，对于长度为0的数组，其编码结果就是0x80，
 // 对于长度为1的数组，其编码结果分两种情况，如果数组中存储的唯一字节小于128，将按照ASCII码编码方式进行编码，否则将其看成长度为1的字符串进
 // 行编码，对于长度大于1的数组，官方实现是将其转换为字节切片后再进行编码，我们这里做了改动，是直接将将数组里的内容编码到 *encBuffer.str 里。
-func makeByteArrayWriter(typ reflect.Type) writer {
+func makeByteArrayWriter(typ reflect.Type) (writer, error) {
 	switch typ.Len() {
 	case 0:
-		return writeLengthZeroByteArray
+		return writeLengthZeroByteArray, nil
 	case 1:
-		return writeLengthOneByteArray
+		return writeLengthOneByteArray, nil
 	default:
 		// 这个地方我们不妨用自己设计的逻辑去实现，官方实现请看：
 		// https://github.com/ethereum/go-ethereum/blob/972007a517c49ee9e2a359950d81c74467492ed2/rlp/encode.go#L218
@@ -301,7 +371,7 @@ func makeByteArrayWriter(typ reflect.Type) writer {
 				buffer.str = append(buffer.str, b)
 			}
 			return nil
-		}
+		}, nil
 	}
 }
 
@@ -334,7 +404,106 @@ func writeLengthOneByteArray(val reflect.Value, buf *encBuffer) error {
 
 // makeSliceWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
 //
-// makeSliceWriter
+// makeSliceWriter 方法接受两个参数：切片的 reflect.Type 和一个 rlpstruct.Tag 实例，之所以需要这个tag，是因为
+// 该切片可能是某个结构体的一个字段，该方法的目的就是生成针对给定切片的编码器，请记住，一个切片中所有元素的类型都是一样的，
+// 所以我们只需要得到切片中元素的类型，并得到针对该类型的编码器就可以实现对整个切片进行编码，个中理由很容易理解。
+func makeSliceWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
+	// 为切片里的元素生成编码器
+	info := theTC.infoWhileGenerating(typ.Elem(), rlpstruct.Tag{})
+	if info.writerErr != nil {
+		return nil, info.writerErr
+	}
+	var w writer
+	if tag.Tail {
+		// 如果这个切片是某个结构体中定义的最后一个字段
+		w = func(value reflect.Value, buffer *encBuffer) error {
+			length := value.Len() // 计算切片长度
+			for i := 0; i < length; i++ {
+				// 将切片里的元素逐个编码到 *encBuffer.str 里，这里的逻辑我们要明白，由于该结构体字段的tag被标记为
+				// "rlp:tail"，那么就不会将该切片当成列表进行编码，而是对该切片里的数据进行逐一编码。
+				if err := info.writer(value.Index(i), buffer); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	} else {
+		// 将该切片当成列表进行编码
+		w = func(value reflect.Value, buffer *encBuffer) error {
+			length := value.Len()
+			if length == 0 {
+				// 编码空列表为0xC0，而编码空字符串会得到0x80
+				buffer.str = append(buffer.str, 0xC0)
+				return nil
+			}
+			// 在 *encBuffer 里面加一个列表头，并返回列表头的索引值（列表头数量减1）
+			listOffset := buffer.listStart()
+			for i := 0; i < length; i++ {
+				if err := info.writer(value.Index(i), buffer); err != nil {
+					return err
+				}
+			}
+			buffer.listEnd(listOffset)
+			return nil
+		}
+	}
+	return w, nil
+}
+
+// makeStructWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// makeStructWriter 方法接受一个参数：某结构体的 reflect.Type，该方法为给定的结构体生成编码器，注意，给定的结构体
+// 的某些字段的tag可能被设置为"rlp:optional"，如果某个字段的tag被设置为"rlp:optional"，则其后的所有字段的tag都必
+// 须被设置为"rlp:optional"。
+func makeStructWriter(typ reflect.Type) (writer, error) {
+	fields, err := processStructFields(typ)
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range fields {
+		if f.info.writerErr != nil {
+			return nil, structFieldError{typ, f.index, f.info.writerErr}
+		}
+	}
+	var w writer
+	firstOptional := firstOptionalField(fields)
+	if firstOptional == len(fields) {
+		// 如果没有字段的tag被设置为"rlp:optional"
+		w = func(value reflect.Value, buffer *encBuffer) error {
+			// 将一整个结构体数据看成是一个列表，结构体里的每个字段看成是列表里的元素
+			listOffset := buffer.listStart()
+			for _, f := range fields {
+				if err = f.info.writer(value.Field(f.index), buffer); err != nil {
+					return err
+				}
+			}
+			buffer.listEnd(listOffset)
+			return nil
+		}
+	} else {
+		w = func(value reflect.Value, buffer *encBuffer) error {
+			lastFieldIndex := len(fields) - 1
+			for ; lastFieldIndex >= firstOptional; lastFieldIndex-- {
+				if value.Field(fields[lastFieldIndex].index).IsZero() {
+					continue
+				} else {
+					// 找到最后一个tag被设置为"rlp:optional"但是值不为空的字段
+					break
+				}
+			}
+			listOffset := buffer.listStart()
+			for i := 0; i < lastFieldIndex; i++ {
+				// tag被设置为"rlp:optional"且值不为空的字段参与编码
+				if err = fields[i].info.writer(value.Field(fields[i].index), buffer); err != nil {
+					return err
+				}
+			}
+			buffer.listEnd(listOffset)
+			return nil
+		}
+	}
+	return w, nil
+}
 
 // putInt ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
 //

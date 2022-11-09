@@ -186,7 +186,7 @@ type field struct {
 // processStructFields ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
 //
 // processStructFields 方法接受某个结构体的 reflect.Type，然后基于此来处理给定的结构体里所有可导出字段，包括每个字段
-// 的tag，最终目的是为了获取所有参与
+// 的tag，最终目的是为了获取所有参与编码的结构体字段信息，在这个过程中，顺便还会为每个字段生成编解码器，官方源码写法是："structFields"。
 func processStructFields(typ reflect.Type) (fields []field, err error) {
 	// 将结构体的字段转换为 rlpstruct.Field
 	var allStructFields []rlpstruct.Field

@@ -104,7 +104,7 @@ func TestEncodeByteArray(t *testing.T) {
 	arr := [10]byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'}
 	typ := reflect.TypeOf(arr)
 	val := reflect.ValueOf(arr)
-	w1 := makeByteArrayWriter(typ)
+	w1, _ := makeByteArrayWriter(typ)
 	w2 := makeByteArrayWriter_(typ)
 
 	buf1 := getEncBuffer()
@@ -117,4 +117,10 @@ func TestEncodeByteArray(t *testing.T) {
 
 	assert.Equal(t, buf1.str, buf2.str)
 	t.Log(buf1.str, "\n", buf2.str)
+}
+
+func TestSliceElem(t *testing.T) {
+	s := []string{"sss"}
+	typ := reflect.TypeOf(s)
+	t.Log(typ.Elem().Kind())
 }
