@@ -138,7 +138,7 @@ func (tc *typeCache) generate(typ reflect.Type, tag rlpstruct.Tag) *typeInfo {
 //
 // infoWhileGenerating 方法接受两个参数，分别是reflect.Type 类型的typ，另一个是 rlpstruct.Tag 类型的 tag，该
 // 方法先将typ和tag组成一个typeKey，然后利用这个key去 typeCache 里寻找对应的 typeInfo，耐人寻味的是，它从 typeCache.next
-// 里去寻找，而不是 typeCache.cur，如果找不到的话，就调用 typeInfo 的 makeDecoderAndWriter 方法即时为 typ 生成
+// 里去寻找，而不是 typeCache.cur，如果找不到的话，就调用 typeInfo 的 makeDecoderAndWriter 方法及时为 typ 生成
 // 专属的编解码器，生成的新 typeInfo 会先被存到 typeCache.next 里，然后再作为函数的返回参数返回出去。
 func (tc *typeCache) infoWhileGenerating(typ reflect.Type, tag rlpstruct.Tag) *typeInfo {
 	key := typeKey{typ, tag}
@@ -148,7 +148,9 @@ func (tc *typeCache) infoWhileGenerating(typ reflect.Type, tag rlpstruct.Tag) *t
 	}
 	// 目前缓存区没有针对给定typ的 typeInfo，只能现场生成了
 	info := new(typeInfo)
-	tc.next[key] = info
+	if tc.next != nil {
+		tc.next[key] = info
+	}
 	info.makeDecoderAndWriter(typ, tag)
 	return info
 }

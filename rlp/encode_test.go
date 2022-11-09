@@ -1,7 +1,9 @@
 package rlp
 
 import (
+	"github.com/232425wxy/understanding-ethereum/rlp/internal/rlpstruct"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -43,4 +45,25 @@ func TestPutHead(t *testing.T) {
 	assert.Equal(t, byte(0xF9), buf[0])
 	assert.Equal(t, byte(1), buf[1])
 	assert.Equal(t, byte(200), buf[2])
+}
+
+func TestEncodeBuffer_WriteString(t *testing.T) {
+	buf := getEncBuffer()
+	s := "123456789"
+	err := writeString(reflect.ValueOf(s), buf)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, buf.str, []byte{0x89, '1', '2', '3', '4', '5', '6', '7', '8', '9'})
+}
+
+func TestMakePtrWriter(t *testing.T) {
+	var i *uint64 = new(uint64)
+	i = nil
+	ptrptr := &i
+	typ := reflect.TypeOf(ptrptr)
+	buf := getEncBuffer()
+	w, err := makeWriter(typ, rlpstruct.Tag{})
+	assert.Equal(t, nil, err)
+	assert.NotNil(t, w)
+	w(reflect.ValueOf(ptrptr), buf)
+	t.Log(buf.str)
 }

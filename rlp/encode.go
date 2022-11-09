@@ -2,6 +2,7 @@ package rlp
 
 import (
 	"errors"
+	"fmt"
 	"github.com/232425wxy/understanding-ethereum/rlp/internal/rlpstruct"
 	"io"
 	"math/big"
@@ -111,7 +112,16 @@ func putHead(buf []byte, smallTag, largeTag byte, size uint64) int {
 // makeWriter 方法接受两个参数，分别是reflect.Type 类型的typ，另一个是 rlpstruct.Tag 类型的 tag，然后为typ生成专属的
 // 编码器，其中tag参数只在为元素为非byte类型的切片、数组和指针类型生成编码器时有用。
 func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
-	return nil, nil
+	kind := typ.Kind()
+	switch {
+	case isUint(kind):
+		return writeUint, nil
+	case kind == reflect.Ptr:
+		// 指针可能是指针的指针，因此我们需要递归地去发现该指针所指向的数据类型
+		return makePtrWriter(typ, tag)
+	default:
+		return nil, fmt.Errorf("rlp: type %v is not RLP-serializable", typ)
+	}
 }
 
 // writeRawValue ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
@@ -175,7 +185,85 @@ func writeBool(val reflect.Value, buf *encBuffer) error {
 
 // writeString ♏ |作者：吴翔宇| 🍁 |日期：2022/11/8|
 //
-// writeString 方法接受两个参数：string 字符串的 reflect.Value 和一个 *encBuffer 实例，该方法将
+// writeString 方法接受两个参数：string 字符串的 reflect.Value 和一个 *encBuffer 实例，该方法将给定的字符串编码到
+// *encBuffer.str 里，例如给定的字符串为"123456789"，则编码结果为：[0x89 '1' '2' '3' '4' '5' '6' '7' '8' '9']。
+func writeString(val reflect.Value, buf *encBuffer) error {
+	s := val.String()
+	if len(s) == 1 && s[0] < 0x80 {
+		// 编码单个ASCII码
+		buf.str = append(buf.str, s[0])
+	} else {
+		// 先将字符串的长度编码到 *encBuffer.str 里
+		buf.encodeStringHeader(len(s))
+		buf.str = append(buf.str, s...)
+	}
+	return nil
+}
+
+// writeBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// writeBytes 方法接受两个参数：字节切片的 reflect.Value 和一个 *encBuffer 实例，该方法将给定的字节切片编码到
+// *encBuffer.str 里。
+func writeBytes(val reflect.Value, buf *encBuffer) error {
+	buf.writeBytes(val.Bytes())
+	return nil
+}
+
+// writeInterface ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// writeInterface 方法接受两个参数：interface{} 的 reflect.Value 和一个 *encBuffer 实例，该方法将某个接口类
+// 型数据编码到 *encBuffer.str 里，如果给定的接口数据是nil，则把它当成空列表进行编码。随后得到接口背后的底层数据类型，
+// 然后根据类型对数据进行编码。
+func writeInterface(val reflect.Value, buf *encBuffer) error {
+	if val.IsNil() {
+		buf.str = append(buf.str, 0xC0)
+		return nil
+	}
+	// 获取接口背后底层的数据
+	eval := val.Elem()
+	// 这里使用 cachedWriter 去寻找针对eval的编码器，这样如此，哪怕eval依然是一个接口，也能递归地
+	// 到找到其底层的数据类型。
+	w, err := cachedWriter(eval.Type())
+	if err != nil {
+		return err
+	}
+	return w(eval, buf)
+}
+
+// makePtrWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// makePtrWriter 方法接受两个参数：指针类型的 reflect.Type 和一个 rlpstruct.Tag 实例，该方法就是为一个指针类型的
+// 数据生成一个编码器。下面给一个例子：
+//
+//	给一个指针的指针：ptrptr = **uint(23)，我们现在尝试获取针对ptrptr的编码器，首先我们调用ptrptr.Elem()获取它指向
+//	的第一层数据类型ptr，是*uint64，它还是个指针，此时，我们会继续获取ptr所指向的第二层数据类型（此处的逻辑由
+//	infoWhileGenerating 方法实现），得到的数据类型是uint64，那么最终我们确定了针对ptrptr的编码器其实就是 writeUint。
+//	那么最终的编码结果就是[23]。
+//
+// 如果上面举的例子中ptrptr所指向的指针等于nil，则value.Elem().IsValid()会等于false。
+func makePtrWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
+	nilEncoding := byte(0xC0)
+	if typeNilKind(typ.Elem(), tag) == String {
+		nilEncoding = 0x80
+	}
+	// 递归地调用去发现指针所指向的数据类型
+	info := theTC.infoWhileGenerating(typ.Elem(), rlpstruct.Tag{})
+	if info.writerErr != nil {
+		return nil, info.writerErr
+	}
+	var w writer = func(value reflect.Value, buffer *encBuffer) error {
+		if ev := value.Elem(); ev.IsValid() {
+			return info.writer(ev, buffer)
+		}
+		buffer.str = append(buffer.str, nilEncoding)
+		return nil
+	}
+	return w, nil
+}
+
+// makeEncoderWriter ♏ |作者：吴翔宇| 🍁 |日期：2022/11/9|
+//
+// makeEncoderWriter
 
 // putInt ♏ |作者：吴翔宇| 🍁 |日期：2022/10/31|
 //

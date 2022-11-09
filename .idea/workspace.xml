@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/encbuffer.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encbuffer.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rlp/encode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/encode_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/typecache.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/typecache.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,7 +115,7 @@
       <pattern value="^\QTestCountValues\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestEncodeBuffer_WriteString in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -123,10 +124,10 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestCurAtomicValue\E$" />
+      <pattern value="^\QTestEncodeBuffer_WriteString\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestSplit in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestMakePtrWriter in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -135,7 +136,7 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestSplit\E$" />
+      <pattern value="^\QTestMakePtrWriter\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestSplitUint64 in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -163,11 +164,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestMakePtrWriter in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestEncodeBuffer_WriteString in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestAppendUint64 in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestCountValues in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestSplitUint64 in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestSplit in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestCurAtomicValue in github.com/232425wxy/understanding-ethereum/rlp" />
       </list>
     </recent_temporary>
   </component>
