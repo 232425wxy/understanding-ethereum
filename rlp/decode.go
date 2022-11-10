@@ -23,6 +23,7 @@ var (
 
 var (
 	errUintOverflow = errors.New("rlp: uint overflow")
+	errNotAtEOL     = errors.New("rlp: call of ListEnd not positioned at EOL")
 )
 
 // 自定义错误类型
@@ -49,7 +50,39 @@ func (err *decodeError) Error() string {
 
 // addErrorContext ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
 //
-// addErrorContext
+// addErrorContext 该方法接受两个参数：error 和一个字符串ctx，如果给定的error的类型是 *decodeError，
+// 则将参数ctx添加到 *decodeError.ctx 中。
+func addErrorContext(err error, ctx string) error {
+	if decErr, ok := err.(*decodeError); ok {
+		decErr.ctx = append(decErr.ctx, ctx)
+	}
+	return err
+}
+
+// wrapStreamError ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// wrapStreamError 方法接受两个入参：error 和 reflect.Type，如果给定的 error 属于以下自定义的错误：
+//
+//	ErrCanonInt、ErrCanonSize、ErrExpectedList、ErrExpectedString、errUintOverflow、errNotAtEOL
+//
+// 则将给定的错误包装成 *decodeError。
+func wrapStreamError(err error, typ reflect.Type) error {
+	switch err {
+	case ErrCanonInt:
+		return &decodeError{msg: "non-canonical integer (leading zero bytes)", typ: typ}
+	case ErrCanonSize:
+		return &decodeError{msg: "non-canonical size information", typ: typ}
+	case ErrExpectedList:
+		return &decodeError{msg: "expected input list", typ: typ}
+	case ErrExpectedString:
+		return &decodeError{msg: "expected input string or byte", typ: typ}
+	case errUintOverflow:
+		return &decodeError{msg: "input string too long", typ: typ}
+	case errNotAtEOL:
+		return &decodeError{msg: "input list has too many elements", typ: typ}
+	}
+	return err
+}
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
