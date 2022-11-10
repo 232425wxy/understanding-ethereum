@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/rlp/decode_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rlp/decode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/decode.go" afterDir="false" />
     </list>
@@ -95,7 +96,7 @@
       <filePath value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestCanAddr in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestBigEndianInt in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -104,19 +105,7 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestCanAddr\E$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="TestEncodeBuffer_WriteString in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="understanding-ethereum" />
-      <working_directory value="$PROJECT_DIR$/rlp" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestEncodeBuffer_WriteString\E$" />
+      <pattern value="^\QTestBigEndianInt\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestEncodeByteArray in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -131,7 +120,7 @@
       <pattern value="^\QTestEncodeByteArray\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestMakePtrWriter in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestReadKind in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -140,7 +129,7 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestMakePtrWriter\E$" />
+      <pattern value="^\QTestReadKind\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestSliceElem in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -153,6 +142,18 @@
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
       <pattern value="^\QTestSliceElem\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestSyncPool in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="understanding-ethereum" />
+      <working_directory value="$PROJECT_DIR$/rlp" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/232425wxy/understanding-ethereum/rlp" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestSyncPool\E$" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
@@ -168,11 +169,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestReadKind in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestBigEndianInt in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestSyncPool in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestSliceElem in github.com/232425wxy/understanding-ethereum/rlp" />
         <item itemvalue="Go Test.TestEncodeByteArray in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestCanAddr in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestMakePtrWriter in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestEncodeBuffer_WriteString in github.com/232425wxy/understanding-ethereum/rlp" />
       </list>
     </recent_temporary>
   </component>
