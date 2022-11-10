@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/232425wxy/understanding-ethereum/rlp/internal/rlpstruct"
 	"io"
+	"math/big"
 	"reflect"
 	"strings"
 )
@@ -33,8 +34,11 @@ var (
 // 定义内部错误
 
 var (
-	errUintOverflow = errors.New("rlp: uint overflow")
-	errNotAtEOL     = errors.New("rlp: call of ListEnd not positioned at EOL")
+	errUintOverflow  = errors.New("rlp: uint overflow")
+	errNotAtEOL      = errors.New("rlp: call of ListEnd not positioned at EOL")
+	errDecodeIntoNil = errors.New("rlp: pointer given to Decode must not be nil")
+	errNoPointer     = errors.New("rlp: interface given to Decode must be a pointer")
+	errNotInList     = errors.New("rlp: call of ListEnd outside of any list")
 )
 
 // 自定义错误类型
@@ -203,6 +207,69 @@ func (s *Stream) Reset(r io.Reader, inputLimit uint64) {
 	s.kindErr = nil
 	s.byteVal = 0
 	s.auxiliaryBuf = [32]byte{}
+}
+
+// Decode ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// Decode 这个方法非常类似于 json.Unmarshal 方法，接受某个类型的指针，然后将底层stream存储的rlp编码内容解码到
+// 给定类型指针指向的空间里。实际上，给定某个类型的指针，我们首先要从 typeCache 缓冲区里寻找针对该类型的解码器，找
+// 到的话就直接用，找不到的话就生成一个。
+func (s *Stream) Decode(val interface{}) error {
+	if val == nil {
+		return errDecodeIntoNil
+	}
+	rVal := reflect.ValueOf(val)
+	rTyp := reflect.TypeOf(val)
+	if rTyp.Kind() != reflect.Pointer {
+		return errNoPointer
+	}
+	if rVal.IsNil() {
+		return errDecodeIntoNil
+	}
+	d, err := cachedDecoder(rTyp.Elem())
+	if err != nil {
+		return err
+	}
+	err = d(s, rVal.Elem())
+	if decErr, ok := err.(*decodeError); ok && len(decErr.ctx) > 0 {
+		decErr.ctx = append(decErr.ctx, fmt.Sprintf("(%v)", rTyp.Elem()))
+	}
+	return err
+}
+
+// ListStart ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// ListStart 官方源码的写法是："List"，我将其改成了："ListStart"，
+func (s *Stream) ListStart() (size uint64, err error) {
+	kind, size, err := s.Kind()
+	if err != nil {
+		return 0, err
+	}
+	if kind != List {
+		return 0, ErrExpectedList
+	}
+	if inList, listLimit := s.listLimit(); inList {
+		s.stack[len(s.stack)-1] = listLimit - size
+	}
+	s.stack = append(s.stack, size)
+	s.kind = -1
+	s.size = 0
+	return size, nil
+}
+
+// ListEnd ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// ListEnd
+func (s *Stream) ListEnd() error {
+	if inList, listLimit := s.listLimit(); !inList {
+		return errNotInList
+	} else if listLimit > 0 {
+		return errNotAtEOL
+	}
+	s.stack = s.stack[:len(s.stack)-1]
+	s.kind = -1
+	s.size = 0
+	return nil
 }
 
 // Kind ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
@@ -377,6 +444,107 @@ func (s *Stream) listLimit() (inList bool, limit uint64) {
 		return false, 0
 	}
 	return true, s.stack[len(s.stack)-1]
+}
+
+// decodeBigInt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// decodeBigInt 方法接受一个大整数的指针 *big.Int，底层stream接下来存储的数据是某个大整数rlp编码的内容，
+// 该方法的作用就是将stream接下来存储的数据编码成一个大整数对象。
+func (s *Stream) decodeBigInt(x *big.Int) error {
+	var buffer []byte
+	kind, size, err := s.Kind()
+	switch {
+	case err != nil:
+		return err
+	case kind == List:
+		return ErrExpectedString
+	case kind == Byte:
+		// 单个ASCII码
+		buffer = s.auxiliaryBuf[:1]
+		buffer[0] = s.byteVal
+		s.kind = -1
+	case size == 0:
+		s.kind = -1
+	case size <= uint64(len(s.auxiliaryBuf)):
+		// 256位以内的大整数，避免给buffer分配空间
+		buffer = s.auxiliaryBuf[:size]
+		if err = s.readFull(buffer); err != nil {
+			return err
+		}
+		if size == 1 && buffer[0] < 0x80 {
+			return ErrCanonSize
+		}
+	default:
+		buffer = make([]byte, size)
+		if err = s.readFull(buffer); err != nil {
+			return err
+		}
+	}
+	if len(buffer) > 0 && buffer[0] == 0 {
+		return ErrCanonInt
+	}
+	x.SetBytes(buffer)
+	return nil
+}
+
+// Uint64 ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// Uint64 方法从底层stream解码出一个64位无符号整数。
+func (s *Stream) Uint64() (uint64, error) {
+	return s.uint(64)
+}
+
+// bool ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// bool 方法解码底层stream接下来的数据成bool类型。
+func (s *Stream) bool() (bool, error) {
+	num, err := s.uint(8)
+	if err != nil {
+		return false, err
+	}
+	switch num {
+	case 0:
+		return false, nil
+	case 1:
+		return true, nil
+	default:
+		return false, fmt.Errorf("rlp: invalid boolean value: %d", num)
+	}
+}
+
+// uint ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// uint 方法接受一个整数maxBits，该方法从底层stream里读取一个整数，该整数的位数必须不大于maxBits，否则报错。
+func (s *Stream) uint(maxBits int) (uint64, error) {
+	kind, size, err := s.Kind()
+	if err != nil {
+		return 0, err
+	}
+	switch kind {
+	case Byte:
+		if s.byteVal == 0 {
+			return 0, ErrCanonInt
+		}
+		s.kind = -1
+		return uint64(s.byteVal), nil
+	case String:
+		if size > uint64(maxBits/8) {
+			return 0, errUintOverflow
+		}
+		v, err := s.readUint(byte(size))
+		switch {
+		case err == ErrCanonSize:
+			return 0, ErrCanonInt
+		case err != nil:
+			return 0, err
+		case size > 0 && v < 128:
+			return 0, ErrCanonSize
+		default:
+			return v, nil
+		}
+	default:
+		return 0, ErrExpectedString
+	}
 }
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
