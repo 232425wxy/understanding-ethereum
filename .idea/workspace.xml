@@ -6,10 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/encbuffer.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encbuffer.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/encode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/encode_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlp/typecache.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/typecache.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlp/decode.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/decode.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,6 +31,12 @@
         <option value="file://$PROJECT_DIR$/../.." />
       </list>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/reflect/type.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/reflect/value.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/runtime/panic.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/testing/testing.go" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />

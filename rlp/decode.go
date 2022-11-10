@@ -2,6 +2,7 @@ package rlp
 
 import (
 	"errors"
+	"fmt"
 	"github.com/232425wxy/understanding-ethereum/rlp/internal/rlpstruct"
 	"reflect"
 )
@@ -23,6 +24,32 @@ var (
 var (
 	errUintOverflow = errors.New("rlp: uint overflow")
 )
+
+// 自定义错误类型
+
+// decodeError ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// decodeError 定义解码时可能遇到的错误
+type decodeError struct {
+	msg string
+	typ reflect.Type
+	ctx []string
+}
+
+func (err *decodeError) Error() string {
+	ctx := ""
+	if len(err.ctx) > 0 {
+		ctx = ", decoding into "
+		for i := len(err.ctx) - 1; i >= 0; i-- {
+			ctx += err.ctx[i]
+		}
+	}
+	return fmt.Sprintf("rlp: %s for %v%s", err.msg, err.typ, ctx)
+}
+
+// addErrorContext ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// addErrorContext
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
