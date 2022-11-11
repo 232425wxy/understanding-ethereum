@@ -487,6 +487,92 @@ func (s *Stream) decodeBigInt(x *big.Int) error {
 	return nil
 }
 
+// Bytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// Bytes 方法返回底层stream中存储的接下来的字符串解码结果，不能是列表数据。
+func (s *Stream) Bytes() ([]byte, error) {
+	kind, size, err := s.Kind()
+	if err != nil {
+		return nil, err
+	}
+	switch kind {
+	case Byte:
+		s.kind = -1
+		return []byte{s.byteVal}, nil
+	case String:
+		bz := make([]byte, size)
+		if err = s.readFull(bz); err != nil {
+			return nil, err
+		}
+		if size == 1 && bz[0] < 0x80 {
+			return nil, ErrCanonSize
+		}
+		return bz, nil
+	default:
+		return nil, ErrExpectedString
+	}
+}
+
+// ReadBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// ReadBytes 方法接受一个字节切片bz，从底层stream解码出相应长度的字符串，非列表数据。
+func (s *Stream) ReadBytes(bz []byte) error {
+	kind, size, err := s.Kind()
+	if err != nil {
+		return err
+	}
+	switch kind {
+	case Byte:
+		if len(bz) != 1 {
+			return fmt.Errorf("input value has wrong size 1, want %d", len(bz))
+		}
+		bz[0] = s.byteVal
+		s.kind = -1
+		return nil
+	case String:
+		if uint64(len(bz)) != size {
+			return fmt.Errorf("input value has wrong size %d, want %d", size, len(bz))
+		}
+		if err = s.readFull(bz); err != nil {
+			return err
+		}
+		if size == 1 && bz[0] < 0x80 {
+			return ErrCanonSize
+		}
+		return nil
+	default:
+		return ErrExpectedString
+	}
+}
+
+// Raw ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// Raw 方法返回stream里存储的 RawValue 数据。
+func (s *Stream) Raw() ([]byte, error) {
+	// 获取下一段数据的类型，size反映出stream里接下来存储的RawValue的大小
+	kind, size, err := s.Kind()
+	if err != nil {
+		return nil, err
+	}
+	if kind == Byte {
+		// 将kind设置为-1的目的是为了避免将来调用Kind()方法返回的kind还是之前编码数据片段的kind
+		s.kind = -1
+		return []byte{s.byteVal}, nil
+	}
+	// 计算编码前缀的的大小
+	prefixSize := headSize(size)
+	buf := make([]byte, uint64(prefixSize)+size)
+	if err = s.readFull(buf[prefixSize:]); err != nil {
+		return nil, err
+	}
+	if kind == String {
+		putHead(buf, 0x80, 0xB7, size)
+	} else {
+		putHead(buf, 0xC0, 0xF7, size)
+	}
+	return buf, nil
+}
+
 // Uint64 ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
 //
 // Uint64 方法从底层stream解码出一个64位无符号整数。
@@ -580,4 +666,87 @@ func (k Kind) String() string {
 // 解码器，其中tag参数只在为切片、数组和指针类型生成解码器时有用。
 func makeDecoder(typ reflect.Type, tag rlpstruct.Tag) (decoder, error) {
 	return nil, nil
+}
+
+// decodeRawValue ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeRawValue 方法实现 decoder 函数句柄，读取stream底层的输入，将其解码为 RawValue。
+func decodeRawValue(s *Stream, val reflect.Value) error {
+	r, err := s.Raw()
+	if err != nil {
+		return err
+	}
+	val.SetBytes(r)
+	return nil
+}
+
+// decodeUint ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeUint 方法实现了 decoder 函数句柄，读取stream底层的输入，将其解码为无符号整数。
+func decodeUint(s *Stream, val reflect.Value) error {
+	typ := val.Type()
+	num, err := s.uint(typ.Bits())
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	val.SetUint(num)
+	return nil
+}
+
+// decodeBool ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeBool 方法实现了 decoder 函数句柄，读取stream底层的输入，将其解码为bool类型。
+func decodeBool(s *Stream, val reflect.Value) error {
+	b, err := s.bool()
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	val.SetBool(b)
+	return nil
+}
+
+// makeListDecoder ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// makeListDecoder
+func makeListDecoder(typ reflect.Type, tag rlpstruct.Tag) (decoder, error) {
+	// 获取列表中元素类型
+	eTyp := typ.Elem()
+	if eTyp.Kind() == reflect.Uint8 && !reflect.PtrTo(eTyp).Implements(decoderInterface) {
+		if typ.Kind() == reflect.Array {
+			return decodeByteArray, nil
+		}
+		return decodeByteSlice, nil
+	}
+	// 如果是非字节数组或者字节切片，就要根据数组和切片中存储的数据类型来生成对应的解码器了
+	info := theTC.infoWhileGenerating(eTyp, rlpstruct.Tag{})
+	if info.decoderErr != nil {
+		return nil, info.decoderErr
+	}
+	var d decoder
+	switch {
+	case typ.Kind() == reflect.Array:
+		d = func(stream *Stream, value reflect.Value) error {
+			return decodeListArray(stream, value, info.decoder)
+		}
+	case tag.Tail:
+		d = func(stream *Stream, value reflect.Value) error {
+			return decodeSliceElems(stream, value, info.decoder)
+		}
+	default:
+		d = func(stream *Stream, value reflect.Value) error {
+			return decodeListSlice(s, value, info.decoder)
+		}
+	}
+	return d, nil
+}
+
+// makeStructDecoder ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// makeStructDecoder
+func makeStructDecoder(typ reflect.Type) (decoder, error) {
+	fields, err := processStructFields(typ)
+	if err != nil {
+		return nil, err
+	}
+	
 }
