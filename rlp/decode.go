@@ -668,6 +668,29 @@ func makeDecoder(typ reflect.Type, tag rlpstruct.Tag) (decoder, error) {
 	return nil, nil
 }
 
+// decodeBigIntNoPtr ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeBigIntNoPtr
+func decodeBigIntNoPtr(s *Stream, val reflect.Value) error {
+	return decodeBigIntPtr(s, val.Addr())
+}
+
+// decodeBigInt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeBigInt 方法实现了 decoder 函数句柄，该方法解码rlp编码内容为 *big.Int。
+func decodeBigIntPtr(s *Stream, val reflect.Value) error {
+	x := val.Interface().(*big.Int)
+	if x == nil {
+		x = new(big.Int)
+		val.Set(reflect.ValueOf(x))
+	}
+	err := s.decodeBigInt(x)
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	return nil
+}
+
 // decodeRawValue ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
 //
 // decodeRawValue 方法实现 decoder 函数句柄，读取stream底层的输入，将其解码为 RawValue。
@@ -734,7 +757,7 @@ func makeListDecoder(typ reflect.Type, tag rlpstruct.Tag) (decoder, error) {
 		}
 	default:
 		d = func(stream *Stream, value reflect.Value) error {
-			return decodeListSlice(s, value, info.decoder)
+			return decodeListSlice(stream, value, info.decoder)
 		}
 	}
 	return d, nil
@@ -748,5 +771,257 @@ func makeStructDecoder(typ reflect.Type) (decoder, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+	// 排除错误
+	for _, f := range fields {
+		if f.info.decoderErr != nil {
+			return nil, structFieldError{typ: typ, fieldIndex: f.index, err: f.info.decoderErr}
+		}
+	}
+	var d decoder = func(stream *Stream, value reflect.Value) error {
+		if _, err = stream.ListStart(); err != nil {
+			return wrapStreamError(err, typ)
+		}
+		for i, f := range fields {
+			err = f.info.decoder(stream, value.Field(f.index))
+			if err == EOL {
+				if f.optional {
+					// optional后面的字段都设置为零值
+					for _, f := range fields[:i] {
+						fv := value.Field(f.index)
+						fv.Set(reflect.Zero(fv.Type()))
+					}
+					break
+				}
+				// 列表里面的数据读完了，但是结构体里的数据还没填充完，说明rlp编码数据太少了
+				return &decodeError{msg: "too few elements", typ: typ}
+			} else if err != nil {
+				return addErrorContext(err, "."+typ.Field(f.index).Name)
+			}
+		}
+		return wrapStreamError(stream.ListEnd(), typ)
+	}
+	return d, nil
+}
+
+// makePtrDecoder ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// makePtrDecoder
+func makePtrDecoder(typ reflect.Type, tag rlpstruct.Tag) (decoder, error) {
+	eTyp := typ.Elem()
+	info := theTC.infoWhileGenerating(eTyp, rlpstruct.Tag{})
+	switch {
+	case info.decoderErr != nil:
+		return nil, info.decoderErr
+	case !tag.NilManual:
+		return makeSimplePtrDecoder(eTyp, info), nil
+	default:
+		return makeNilPtrDecoder(eTyp, info, tag), nil
+	}
+}
+
+// makeSimplePtrDecoder ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// makeSimplePtrDecoder
+func makeSimplePtrDecoder(eTyp reflect.Type, info *typeInfo) decoder {
+	return func(stream *Stream, value reflect.Value) error {
+		newVal := value
+		if value.IsNil() {
+			newVal = reflect.New(eTyp)
+		}
+		if err := info.decoder(stream, newVal.Elem()); err == nil {
+			value.Set(newVal)
+		} else {
+			return err
+		}
+		return nil
+	}
+}
+
+// makeNilPtrDecoder ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// makeNilPtrDecoder
+func makeNilPtrDecoder(eTyp reflect.Type, info *typeInfo, tag rlpstruct.Tag) decoder {
+	typ := reflect.PtrTo(eTyp)
+	nilPtr := reflect.Zero(typ)
+	nilKind := typeNilKind(eTyp, tag)
+
+	return func(stream *Stream, value reflect.Value) error {
+		kind, size, err := stream.Kind()
+		if err != nil {
+			value.Set(nilPtr)
+			return wrapStreamError(err, typ)
+		}
+		if kind != Byte && size == 0 {
+			if kind != nilKind {
+				return &decodeError{msg: fmt.Sprintf("wrong kind of empty value (got %v, want %v)", kind, nilKind), typ: typ}
+			}
+			stream.kind = -1
+			value.Set(nilPtr)
+			return nil
+		}
+		newVal := value
+		if value.IsNil() {
+			newVal = reflect.New(eTyp)
+		}
+		if err = info.decoder(stream, newVal.Elem()); err == nil {
+			value.Set(newVal)
+		} else {
+			return err
+		}
+		return nil
+	}
+}
+
+// decodeInterface ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeInterface
+func decodeInterface(s *Stream, val reflect.Value) error {
+	// 只能编码方法数为0的接口
+	if val.Type().NumMethod() != 0 {
+		return fmt.Errorf("rlp: type %v is not RLP-serializable", val.Type())
+	}
+	kind, _, err := s.Kind()
+	if err != nil {
+		return err
+	}
+	if kind == List {
+		slice := reflect.New(reflect.TypeOf([]interface{}{})).Elem()
+		if err = decodeListSlice(s, slice, decodeInterface); err != nil {
+			return err
+		}
+		val.Set(slice)
+	} else {
+		b, err := s.Bytes()
+		if err != nil {
+			return err
+		}
+		val.Set(reflect.ValueOf(b))
+	}
+	return nil
+}
+
+// decodeDecoder ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeDecoder
+func decodeDecoder(s *Stream, val reflect.Value) error {
+	return val.Addr().Interface().(Decoder).DecodeRLP(s)
+}
+
+// decodeByteSlice ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeByteSlice
+func decodeByteSlice(s *Stream, val reflect.Value) error {
+	b, err := s.Bytes()
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	val.SetBytes(b)
+	return nil
+}
+
+// decodeByteArray ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeByteArray
+func decodeByteArray(s *Stream, val reflect.Value) error {
+	kind, size, err := s.Kind()
+	if err != nil {
+		return err
+	}
+	slice := byteArrayBytes(val, val.Len())
+	switch kind {
+	case Byte:
+		if len(slice) == 0 {
+			return &decodeError{msg: "input string too long", typ: val.Type()}
+		} else if len(slice) > 1 {
+			return &decodeError{msg: "input string too short", typ: val.Type()}
+		}
+		slice[0] = s.byteVal
+		s.kind = -1
+	case String:
+		if uint64(len(slice)) < size {
+			return &decodeError{msg: "input string too long", typ: val.Type()}
+		}
+		if uint64(len(slice)) > size {
+			return &decodeError{msg: "input string too short", typ: val.Type()}
+		}
+		if err = s.readFull(slice); err != nil {
+			return err
+		}
+		if size == 1 && slice[0] < 0x80 {
+			return wrapStreamError(ErrCanonSize, val.Type())
+		}
+	case List:
+		return wrapStreamError(ErrExpectedString, val.Type())
+	}
+	return nil
+}
+
+// decodeListArray ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeListArray
+func decodeListArray(s *Stream, val reflect.Value, elemDec decoder) error {
+	if _, err := s.ListStart(); err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	length := val.Len()
+	i := 0
+	for ; i < length; i++ {
+		if err := elemDec(s, val.Index(i)); err == EOL {
+			break
+		} else if err != nil {
+			return addErrorContext(err, fmt.Sprintf("[%d]", i))
+		}
+	}
+	if i < length {
+		return &decodeError{msg: "input list has too few elements", typ: val.Type()}
+	}
+	return wrapStreamError(s.ListEnd(), val.Type())
+}
+
+// decodeSliceElems ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeSliceElems
+func decodeSliceElems(s *Stream, val reflect.Value, elemDec decoder) error {
+	i := 0
+	for ; ; i++ {
+		if i >= val.Cap() {
+			newCap := val.Cap() + val.Cap()/2
+			if newCap < 4 {
+				newCap = 4
+			}
+			newVal := reflect.MakeSlice(val.Type(), val.Len(), newCap)
+			reflect.Copy(newVal, val)
+			val.Set(newVal)
+		}
+		if i > val.Len() {
+			val.SetLen(i + 1)
+		}
+		if err := elemDec(s, val.Index(i)); err == EOL {
+			break
+		} else if err != nil {
+			return addErrorContext(err, fmt.Sprint("[", i, "]"))
+		}
+	}
+	if i < val.Len() {
+		val.SetLen(i)
+	}
+	return nil
+}
+
+// decodeListSlice ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeListSlice
+func decodeListSlice(s *Stream, val reflect.Value, elemDec decoder) error {
+	size, err := s.ListStart()
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	if size == 0 {
+		val.Set(reflect.MakeSlice(val.Type(), 0, 0))
+		return s.ListEnd()
+	}
+	if err = decodeSliceElems(s, val, elemDec); err != nil {
+		return err
+	}
+	return s.ListEnd()
 }
