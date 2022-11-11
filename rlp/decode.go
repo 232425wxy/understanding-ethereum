@@ -11,7 +11,39 @@ import (
 	"math/big"
 	"reflect"
 	"strings"
+	"sync"
 )
+
+/*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
+
+// API
+
+// Decode ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// Decode
+func Decode(r io.Reader, val interface{}) error {
+	stream := streamPool.Get().(*Stream)
+	defer streamPool.Put(stream)
+	stream.Reset(r, 0)
+	return stream.Decode(val)
+}
+
+// DecodeBytes ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// DecodeBytes
+func DecodeBytes(bz []byte, val interface{}) error {
+	r := bytes.NewReader(bz)
+	stream := streamPool.Get().(*Stream)
+	defer streamPool.Put(stream)
+	stream.Reset(r, uint64(len(bz)))
+	if err := stream.Decode(val); err != nil {
+		return err
+	}
+	if r.Len() > 0 {
+		return ErrMoreThanOneValue
+	}
+	return nil
+}
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
@@ -23,12 +55,13 @@ var EOL = errors.New("rlp: end of list")
 // 定义全局错误
 
 var (
-	ErrCanonSize      = errors.New("rlp: non-canonical size information")
-	ErrExpectedString = errors.New("rlp: expected String or Byte")
-	ErrExpectedList   = errors.New("rlp: expected List")
-	ErrCanonInt       = errors.New("rlp: non-canonical integer format")
-	ErrElemTooLarge   = errors.New("rlp: element is larger than containing list")
-	ErrValueTooLarge  = errors.New("rlp: value size exceeds available input length")
+	ErrCanonSize        = errors.New("rlp: non-canonical size information")
+	ErrExpectedString   = errors.New("rlp: expected String or Byte")
+	ErrExpectedList     = errors.New("rlp: expected List")
+	ErrCanonInt         = errors.New("rlp: non-canonical integer format")
+	ErrElemTooLarge     = errors.New("rlp: element is larger than containing list")
+	ErrValueTooLarge    = errors.New("rlp: value size exceeds available input length")
+	ErrMoreThanOneValue = errors.New("rlp: input contains more than one value")
 )
 
 // 定义内部错误
@@ -145,6 +178,8 @@ type Stream struct {
 	limited      bool
 }
 
+var streamPool = sync.Pool{New: func() interface{} { return new(Stream) }}
+
 // NewStream ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
 //
 // NewStream 方法接受两个入参：io.Reader 和一个64位无符号整数 inputLimit，这两个参数用来实例化 *Stream，
@@ -167,6 +202,34 @@ func NewListStream(r io.Reader, inputLimit uint64) *Stream {
 	s.kind = List
 	s.size = inputLimit
 	return s
+}
+
+// Decode ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
+//
+// Decode 这个方法非常类似于 json.Unmarshal 方法，接受某个类型的指针，然后将底层stream存储的rlp编码内容解码到
+// 给定类型指针指向的空间里。实际上，给定某个类型的指针，我们首先要从 typeCache 缓冲区里寻找针对该类型的解码器，找
+// 到的话就直接用，找不到的话就生成一个。
+func (s *Stream) Decode(val interface{}) error {
+	if val == nil {
+		return errDecodeIntoNil
+	}
+	rVal := reflect.ValueOf(val)
+	rTyp := reflect.TypeOf(val)
+	if rTyp.Kind() != reflect.Pointer {
+		return errNoPointer
+	}
+	if rVal.IsNil() {
+		return errDecodeIntoNil
+	}
+	d, err := cachedDecoder(rTyp.Elem())
+	if err != nil {
+		return err
+	}
+	err = d(s, rVal.Elem())
+	if decErr, ok := err.(*decodeError); ok && len(decErr.ctx) > 0 {
+		decErr.ctx = append(decErr.ctx, fmt.Sprintf("(%v)", rTyp.Elem()))
+	}
+	return err
 }
 
 // Reset ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
@@ -207,34 +270,6 @@ func (s *Stream) Reset(r io.Reader, inputLimit uint64) {
 	s.kindErr = nil
 	s.byteVal = 0
 	s.auxiliaryBuf = [32]byte{}
-}
-
-// Decode ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
-//
-// Decode 这个方法非常类似于 json.Unmarshal 方法，接受某个类型的指针，然后将底层stream存储的rlp编码内容解码到
-// 给定类型指针指向的空间里。实际上，给定某个类型的指针，我们首先要从 typeCache 缓冲区里寻找针对该类型的解码器，找
-// 到的话就直接用，找不到的话就生成一个。
-func (s *Stream) Decode(val interface{}) error {
-	if val == nil {
-		return errDecodeIntoNil
-	}
-	rVal := reflect.ValueOf(val)
-	rTyp := reflect.TypeOf(val)
-	if rTyp.Kind() != reflect.Pointer {
-		return errNoPointer
-	}
-	if rVal.IsNil() {
-		return errDecodeIntoNil
-	}
-	d, err := cachedDecoder(rTyp.Elem())
-	if err != nil {
-		return err
-	}
-	err = d(s, rVal.Elem())
-	if decErr, ok := err.(*decodeError); ok && len(decErr.ctx) > 0 {
-		decErr.ctx = append(decErr.ctx, fmt.Sprintf("(%v)", rTyp.Elem()))
-	}
-	return err
 }
 
 // ListStart ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
@@ -665,7 +700,45 @@ func (k Kind) String() string {
 // makeDecoder 方法接受两个参数，分别是reflect.Type 类型的typ，另一个是 rlpstruct.Tag 类型的 tag，然后为typ生成专属的
 // 解码器，其中tag参数只在为切片、数组和指针类型生成解码器时有用。
 func makeDecoder(typ reflect.Type, tag rlpstruct.Tag) (decoder, error) {
-	return nil, nil
+	kind := typ.Kind()
+	switch {
+	case typ == rawValueType:
+		return decodeRawValue, nil
+	case typ.AssignableTo(reflect.PtrTo(reflect.TypeOf(big.Int{}))):
+		return decodeBigIntPtr, nil
+	case typ.AssignableTo(reflect.TypeOf(big.Int{})):
+		return decodeBigIntNoPtr, nil
+	case reflect.PtrTo(typ).Implements(decoderInterface):
+		return decodeDecoder, nil
+	case isUint(kind):
+		return decodeUint, nil
+	case kind == reflect.Bool:
+		return decodeBool, nil
+	case kind == reflect.String:
+		return decodeString, nil
+	case kind == reflect.Interface:
+		return decodeInterface, nil
+	case kind == reflect.Struct:
+		return makeStructDecoder(typ)
+	case kind == reflect.Slice || kind == reflect.Array:
+		return makeListDecoder(typ, tag)
+	case kind == reflect.Pointer:
+		return makePtrDecoder(typ, tag)
+	default:
+		return nil, fmt.Errorf("rlp: type %v is not RLP-serializable", typ)
+	}
+}
+
+// decodeString ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
+//
+// decodeString
+func decodeString(s *Stream, val reflect.Value) error {
+	b, err := s.Bytes()
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	val.SetString(string(b))
+	return nil
 }
 
 // decodeBigIntNoPtr ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
