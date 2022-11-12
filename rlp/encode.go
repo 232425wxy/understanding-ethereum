@@ -389,15 +389,14 @@ func writeLengthZeroByteArray(val reflect.Value, buf *encBuffer) error {
 // writeLengthOneByteArray 方法用于实现 writer 函数，该方法的作用是为长度为1的字节数组生成编码器，对于
 // 长度为1的字节数组，它存储的唯一字节存在两种情况，大于127或者小于128，对于大于127的字节，会将其看成长度是1
 // 的字符串，而对于小于128的字节，会将其看成单个ASCII码，对于以上两种情况，会采用不同的编码手段，相信不用说也
-// 能知道会采用哪两种手段。下面方法的实现和官方有些不一样，可以看官方的实现方法：
-//
-//	https://github.com/ethereum/go-ethereum/blob/972007a517c49ee9e2a359950d81c74467492ed2/rlp/encode.go#L240
+// 能知道会采用哪两种手段。
 func writeLengthOneByteArray(val reflect.Value, buf *encBuffer) error {
-	b := val.Bytes()
-	if b[0] < byte(0x80) {
-		buf.str = append(buf.str, b[0])
+	//b := val.Bytes()，这个只适合在切片上调用
+	b := val.Index(0).Uint()
+	if b < 0x80 {
+		buf.str = append(buf.str, byte(b))
 	} else {
-		buf.str = append(buf.str, 0x81, b[0])
+		buf.str = append(buf.str, 0x81, byte(b))
 	}
 	return nil
 }
