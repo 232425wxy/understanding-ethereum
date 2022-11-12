@@ -210,6 +210,8 @@ func TestNoByteSlice(t *testing.T) {
 		{val: []interface{}{[]interface{}{}}, output: "c1c0"},
 		{val: []interface{}{[]interface{}{}, uint(3)}, output: "c2c003"},
 		{val: []interface{}{[]interface{}{}, []interface{}{[]interface{}{}}}, output: "c3c0c1c0"},
+		{val: []interface{}{[]interface{}{}, [][]interface{}{{}}}, output: "c3c0c1c0"},
+		{val: []interface{}{[]interface{}{}, []interface{}{byte(2)}}, output: "c3c0c102"},
 		{val: []interface{}{[]interface{}{}, [][]interface{}{{}}, []interface{}{[]interface{}{}, [][]interface{}{{}}}}, output: "c7c0c1c0c3c0c1c0"},
 		{val: []string{"aaa", "bbb", "ccc"}, output: "cc836161618362626283636363"},
 		{val: []interface{}{uint(1), uint(0xffffff), []interface{}{[]uint{4, 5, 6}}, "abc"}, output: "ce0183ffffffc4c304050683616263"},
@@ -229,6 +231,55 @@ func TestRawValue(t *testing.T) {
 		{val: RawValue{128}, output: "80"},
 		{val: RawValue{1, 2, 3}, output: "010203"},
 		{val: []RawValue{{1, 2}, {3, 4}}, output: "c401020304"},
+	}
+	for i, test := range encTests {
+		run(t, f, test, i)
+	}
+}
+
+type simplestruct struct {
+	A uint
+	B string
+}
+
+type recstruct struct {
+	I     uint
+	Child *recstruct `rlp:"nil"`
+}
+
+type intField struct {
+	X int
+}
+
+type ignoredFiled struct {
+	A uint
+	B uint `rlp:"-"`
+	C uint
+}
+
+type tailStruct struct {
+	A    uint
+	Tail []RawValue `rlp:"tail"`
+}
+
+type optionalFields struct {
+	A uint
+	B uint `rlp:"optional"`
+	C uint `rlp:"optional"`
+}
+
+func TestStructs(t *testing.T) {
+	var encTests = []encTest{
+		{val: simplestruct{}, output: "c28080"},
+		{val: simplestruct{A: 3, B: "abc"}, output: "c50383616263"},
+		{val: simplestruct{A: 326, B: "abc"}, output: "c782014683616263"},
+		{val: &recstruct{I: 5, Child: nil}, output: "c205c0"},
+		{val: &recstruct{I: 5, Child: &recstruct{I: 5, Child: &recstruct{I: 5, Child: nil}}}, output: "c605c405c205c0"},
+		{val: intField{X: 3}, error: "rlp: type int is not RLP-serializable (struct field rlp.intField.X)"},
+		{val: ignoredFiled{A: 1, B: 2, C: 3}, output: "c20103"},
+		{val: tailStruct{A: 1, Tail: nil}, output: "c101"},
+		{val: tailStruct{A: 1, Tail: []RawValue{{1, 2, 3}}}, output: "c401010203"},
+		{val: optionalFields{A: 1, B: 2, C: 3}, output: "c3010203"},
 	}
 	for i, test := range encTests {
 		run(t, f, test, i)

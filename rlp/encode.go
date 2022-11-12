@@ -491,7 +491,7 @@ func makeStructWriter(typ reflect.Type) (writer, error) {
 				}
 			}
 			listOffset := buffer.listStart()
-			for i := 0; i < lastFieldIndex; i++ {
+			for i := 0; i <= lastFieldIndex; i++ {
 				// tag被设置为"rlp:optional"且值不为空的字段参与编码
 				if err = fields[i].info.writer(value.Field(fields[i].index), buffer); err != nil {
 					return err
