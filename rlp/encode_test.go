@@ -268,6 +268,27 @@ type optionalFields struct {
 	C uint `rlp:"optional"`
 }
 
+type optionalAndTailField struct {
+	A    uint
+	B    uint   `rlp:"optional"`
+	Tail []uint `rlp:"tail"`
+}
+
+type optionalBigIntField struct {
+	A uint
+	B *big.Int `rlp:"optional"`
+}
+
+type optionalPtrFiled struct {
+	A uint
+	B *[3]byte `rlp:"optional"`
+}
+
+type optionalPtrFieldNil struct {
+	A uint
+	B *[3]byte `rlp:"optional,nil"`
+}
+
 func TestStructs(t *testing.T) {
 	var encTests = []encTest{
 		{val: simplestruct{}, output: "c28080"},
@@ -280,6 +301,18 @@ func TestStructs(t *testing.T) {
 		{val: tailStruct{A: 1, Tail: nil}, output: "c101"},
 		{val: tailStruct{A: 1, Tail: []RawValue{{1, 2, 3}}}, output: "c401010203"},
 		{val: optionalFields{A: 1, B: 2, C: 3}, output: "c3010203"},
+		{val: optionalFields{A: 1, B: 0, C: 3}, output: "c3018003"},
+		{val: optionalFields{A: 1, C: 3}, output: "c3018003"},
+		{val: optionalFields{A: 1, B: 3}, output: "c20103"},
+		{val: optionalFields{A: 1, B: 3, C: 0}, output: "c20103"},
+		{val: &optionalAndTailField{A: 1, B: 2}, output: "c20102"},
+		{val: &optionalAndTailField{A: 1}, output: "c101"},
+		{val: &optionalAndTailField{A: 1, B: 2, Tail: []uint{3, 4}}, output: "c401020304"},
+		{val: &optionalAndTailField{A: 1, Tail: []uint{3, 4}}, output: "c401800304"},
+		{val: &optionalBigIntField{A: 1}, output: "c101"},
+		{val: &optionalPtrFiled{A: 1}, output: "c101"},
+		{val: optionalPtrFiled{A: 1, B: &[3]byte{1, 2, 3}}, output: "c50183010203"},
+		{val: &optionalPtrFieldNil{A: 1}, output: "c101"},
 	}
 	for i, test := range encTests {
 		run(t, f, test, i)
