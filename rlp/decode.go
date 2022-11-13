@@ -1,3 +1,9 @@
+/*
+RLP编码数据由两部分组成：编码前缀（Encoding Prefix，EP）和编码内容（Encoding Content，EC），
+其中编码前缀EP由类型标记位（Type Marker Bit，TMB）和一个可选的长度编码（Optional Length Coding，OLC）组成，
+这部分内容在README里有详细介绍。
+*/
+
 package rlp
 
 import (
@@ -169,9 +175,9 @@ type Stream struct {
 	remaining uint64
 	// size 只在Kind()方法中被显式赋予非0的值，size 表示某编码头后面跟着多少个字节是由该
 	// 编码头主导的，比如某个编码头的值为0x88，那么size应当取值为8
-	size         uint64
-	kindErr      error // 最近一次调用 readKind 方法时产生的错误
-	stack        []uint64
+	size         uint64   // size 表示EC的长度，EP||EC表示RLP编码结果，其中EP表示编码前缀，EC表示编码内容
+	kindErr      error    // 最近一次调用 readKind 方法时产生的错误
+	stack        []uint64 // stack 里面存储的是list的EC长度
 	auxiliaryBuf [32]byte // 用于整数解码的辅助缓冲区
 	kind         Kind
 	byteVal      byte // 类型标签中的值，例如0xC0或者0x87等等
@@ -274,7 +280,8 @@ func (s *Stream) Reset(r io.Reader, inputLimit uint64) {
 
 // ListStart ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
 //
-// ListStart 官方源码的写法是："List"，我将其改成了："ListStart"，
+// ListStart 官方源码的写法是："List"，我将其改成了："ListStart"，该方法返回的第一个参数表示list
+// 编码数据EC部分的长度。
 func (s *Stream) ListStart() (size uint64, err error) {
 	kind, size, err := s.Kind()
 	if err != nil {
@@ -309,15 +316,20 @@ func (s *Stream) ListEnd() error {
 
 // Kind ♏ |作者：吴翔宇| 🍁 |日期：2022/11/10|
 //
-// Kind 方法返回下一个编码数据的类型和其大小，类型就三类：Byte、String、List。
+// Kind 方法返回下一个编码数据的类型和其EC部分的大小，类型就三类：Byte、String、List。
+// 如果每次在 ListStart 方法被调用之后再调用此方法，会从底层stream中读取一个字节的TMB（类型标记位），因此，
+// Stream.remaining 和 Stream.stack 里的最后一个元素会被减一。
 func (s *Stream) Kind() (kind Kind, size uint64, err error) {
 	if s.kind >= 0 {
 		return s.kind, s.size, s.kindErr
 	}
+	// 当我们刚开始初始化Stream的时候，比如给它底层的输入数据是"c80102030405060708"，尽管我们给的是一个list
+	// 编码数据，但是此时第一次调用listLimit()方法获得的第一个返回值依然是false
 	inList, listLimit := s.listLimit()
 	if inList && listLimit == 0 {
 		return 0, 0, EOL
 	}
+	// 在这里会从"c80102030405060708"中读取一个字节的内容
 	s.kind, s.size, s.kindErr = s.readKind()
 	if s.kindErr == nil {
 		if inList && s.size > listLimit {
