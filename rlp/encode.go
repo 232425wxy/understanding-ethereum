@@ -159,6 +159,8 @@ func putHead(buf []byte, smallTag, largeTag byte, size uint64) int {
 //
 // makeWriter 方法接受两个参数，分别是reflect.Type 类型的typ，另一个是 rlpstruct.Tag 类型的 tag，然后为typ生成专属的
 // 编码器，其中tag参数只在为元素为非byte类型的切片、数组和指针类型生成编码器时有用。
+//
+//	🚨注意：下面case之间的顺序是有讲究的。
 func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 	kind := typ.Kind()
 	switch {
@@ -168,6 +170,13 @@ func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 		return writeBigIntPtr, nil
 	case typ.AssignableTo(reflect.TypeOf(big.Int{})):
 		return writeBigIntNoPtr, nil
+	case kind == reflect.Pointer:
+		// 指针可能是指针的指针，因此我们需要递归地去发现该指针所指向的数据类型
+		return makePtrWriter(typ, tag)
+	case reflect.PtrTo(typ).Implements(encoderInterface):
+		// 我们将kind==reflect.Pointer逻辑放在前面的原因是，有些数据类型，它们的指针实现了EncodeRLP方法，这样
+		// 的话，利用makePtrWriter方法，可以将程序执行转移到此case分支处
+		return makeEncodeWriter(typ)
 	case isUint(kind):
 		return writeUint, nil
 	case kind == reflect.Bool:
@@ -176,19 +185,14 @@ func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 		return writeString, nil
 	case kind == reflect.Slice && isByte(typ.Elem()):
 		return writeBytes, nil
-	case kind == reflect.Interface:
-		return writeInterface, nil
-	case kind == reflect.Ptr:
-		// 指针可能是指针的指针，因此我们需要递归地去发现该指针所指向的数据类型
-		return makePtrWriter(typ, tag)
-	case reflect.PtrTo(typ).Implements(encoderInterface):
-		return makeEncodeWriter(typ)
 	case kind == reflect.Array && isByte(typ.Elem()):
 		return makeByteArrayWriter(typ)
 	case kind == reflect.Slice || kind == reflect.Array:
 		return makeSliceWriter(typ, tag)
 	case kind == reflect.Struct:
 		return makeStructWriter(typ)
+	case kind == reflect.Interface:
+		return writeInterface, nil
 	default:
 		return nil, fmt.Errorf("rlp: type %v is not RLP-serializable", typ)
 	}
@@ -389,15 +393,14 @@ func writeLengthZeroByteArray(val reflect.Value, buf *encBuffer) error {
 // writeLengthOneByteArray 方法用于实现 writer 函数，该方法的作用是为长度为1的字节数组生成编码器，对于
 // 长度为1的字节数组，它存储的唯一字节存在两种情况，大于127或者小于128，对于大于127的字节，会将其看成长度是1
 // 的字符串，而对于小于128的字节，会将其看成单个ASCII码，对于以上两种情况，会采用不同的编码手段，相信不用说也
-// 能知道会采用哪两种手段。下面方法的实现和官方有些不一样，可以看官方的实现方法：
-//
-//	https://github.com/ethereum/go-ethereum/blob/972007a517c49ee9e2a359950d81c74467492ed2/rlp/encode.go#L240
+// 能知道会采用哪两种手段。
 func writeLengthOneByteArray(val reflect.Value, buf *encBuffer) error {
-	b := val.Bytes()
-	if b[0] < byte(0x80) {
-		buf.str = append(buf.str, b[0])
+	//b := val.Bytes()，这个只适合在切片上调用
+	b := val.Index(0).Uint()
+	if b < 0x80 {
+		buf.str = append(buf.str, byte(b))
 	} else {
-		buf.str = append(buf.str, 0x81, b[0])
+		buf.str = append(buf.str, 0x81, byte(b))
 	}
 	return nil
 }
@@ -492,7 +495,7 @@ func makeStructWriter(typ reflect.Type) (writer, error) {
 				}
 			}
 			listOffset := buffer.listStart()
-			for i := 0; i < lastFieldIndex; i++ {
+			for i := 0; i <= lastFieldIndex; i++ {
 				// tag被设置为"rlp:optional"且值不为空的字段参与编码
 				if err = fields[i].info.writer(value.Field(fields[i].index), buffer); err != nil {
 					return err

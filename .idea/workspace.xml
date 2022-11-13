@@ -4,8 +4,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="3c30e1c5-3924-4709-b8b2-1d20fed9434a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+=======
+    <list default="true" id="f79195a7-de42-47d6-96e0-eaeac8f74ac7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/rlp/encode_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/rlp/encode_test.go" afterDir="false" />
+>>>>>>> tmp
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,7 +24,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../language/go" />
+  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../language/go1.19/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -32,10 +37,13 @@
     </option>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/reflect/type.go" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/reflect/value.go" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/runtime/panic.go" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../../../../language/go/src/testing/testing.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/common/math/big.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rlp/encbuffer.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rlp/encbuffer_test.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rlp/encode.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rlp/encode_test.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rlp/raw.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rlp/typecache.go" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -66,7 +74,7 @@
     &quot;configurable.GoLibrariesConfigurable.is.expanded&quot;: &quot;true&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/cosmic&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/rain&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -74,7 +82,7 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;go.vgo&quot;
   }
 }</component>
-  <component name="RunManager" selected="Go Build.go build understanding-ethereum">
+  <component name="RunManager" selected="Go Test.TestStructs in github.com/232425wxy/understanding-ethereum/rlp">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$" />
@@ -94,7 +102,7 @@
       <filePath value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestBigEndianInt in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestEncodeInteger in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -103,10 +111,10 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestBigEndianInt\E$" />
+      <pattern value="^\QTestEncodeInteger\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestEncodeByteArray in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestEncodeString in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -115,10 +123,10 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestEncodeByteArray\E$" />
+      <pattern value="^\QTestEncodeString\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestReadKind in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestNoByteSlice in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -127,10 +135,10 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestReadKind\E$" />
+      <pattern value="^\QTestNoByteSlice\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestSliceElem in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestRawValue in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -139,10 +147,10 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestSliceElem\E$" />
+      <pattern value="^\QTestRawValue\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestSyncPool in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestStructs in github.com/232425wxy/understanding-ethereum/rlp" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="understanding-ethereum" />
       <working_directory value="$PROJECT_DIR$/rlp" />
       <root_directory value="$PROJECT_DIR$" />
@@ -151,7 +159,7 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestSyncPool\E$" />
+      <pattern value="^\QTestStructs\E$" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
@@ -167,11 +175,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Test.TestReadKind in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestBigEndianInt in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestSyncPool in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestSliceElem in github.com/232425wxy/understanding-ethereum/rlp" />
-        <item itemvalue="Go Test.TestEncodeByteArray in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestStructs in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestEncodeInteger in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestNoByteSlice in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestRawValue in github.com/232425wxy/understanding-ethereum/rlp" />
+        <item itemvalue="Go Test.TestEncodeString in github.com/232425wxy/understanding-ethereum/rlp" />
       </list>
     </recent_temporary>
   </component>
