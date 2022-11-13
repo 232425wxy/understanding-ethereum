@@ -403,6 +403,7 @@ func (s *Stream) readUint(size byte) (uint64, error) {
 		b, err := s.readByte()
 		return uint64(b), err
 	default:
+		// 无符号整数最多只需要8个字节去存储
 		buffer := s.auxiliaryBuf[:8]
 		for i := range buffer {
 			buffer[i] = 0
@@ -414,6 +415,7 @@ func (s *Stream) readUint(size byte) (uint64, error) {
 		if buffer[start] == 0 {
 			return 0, ErrCanonSize
 		}
+		// binary.BigEndian.Uint64方法要求传入的字节切片长度至少为8
 		return binary.BigEndian.Uint64(buffer[:]), nil
 	}
 }

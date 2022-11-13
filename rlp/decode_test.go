@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -202,8 +203,18 @@ type decodeTest struct {
 	error string
 }
 
-func runD(t *testing.T, f func(test decodeTest) error) {
-
+func runD(t *testing.T, f func(test decodeTest) error, test decodeTest, serial int) {
+	err := f(test)
+	if err != nil && test.error == "" {
+		t.Errorf("%d: unexpected Decode error: %v\ndecoding into %T\ninput: %q", serial, err, test.ptr, test.input)
+	}
+	if test.error != "" && err.Error() != test.error {
+		t.Errorf("%d: Decode error mismatch\ngot:	%v\nwant:	%v\ndecoding into:	%T\ninput:	%q", serial, err, test.error, &test, test.input)
+	}
+	deref := reflect.ValueOf(test.ptr).Elem().Interface()
+	if err == nil && !reflect.DeepEqual(deref, test.value) {
+		t.Errorf("%d: Decode value mismatch\ngot:	%#v\nwant:	%#v\ndecoding into:	%T\ninput:	%q", serial, deref, test.value, test.ptr, test.input)
+	}
 }
 
 func fd(test decodeTest) error {
@@ -217,4 +228,11 @@ func TestDecodeBool(t *testing.T) {
 		{input: "80", ptr: new(bool), value: false},
 		{input: "02", ptr: new(bool), error: "rlp: invalid boolean value: 2"},
 	}
+	for i, test := range decodeTests {
+		runD(t, fd, test, i)
+	}
+}
+
+func TestDecodeIntegers(t *testing.T) {
+
 }
