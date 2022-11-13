@@ -159,6 +159,8 @@ func putHead(buf []byte, smallTag, largeTag byte, size uint64) int {
 //
 // makeWriter 方法接受两个参数，分别是reflect.Type 类型的typ，另一个是 rlpstruct.Tag 类型的 tag，然后为typ生成专属的
 // 编码器，其中tag参数只在为元素为非byte类型的切片、数组和指针类型生成编码器时有用。
+//
+//	🚨注意：下面case之间的顺序是有讲究的。
 func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 	kind := typ.Kind()
 	switch {
@@ -168,6 +170,13 @@ func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 		return writeBigIntPtr, nil
 	case typ.AssignableTo(reflect.TypeOf(big.Int{})):
 		return writeBigIntNoPtr, nil
+	case kind == reflect.Pointer:
+		// 指针可能是指针的指针，因此我们需要递归地去发现该指针所指向的数据类型
+		return makePtrWriter(typ, tag)
+	case reflect.PtrTo(typ).Implements(encoderInterface):
+		// 我们将kind==reflect.Pointer逻辑放在前面的原因是，有些数据类型，它们的指针实现了EncodeRLP方法，这样
+		// 的话，利用makePtrWriter方法，可以将程序执行转移到此case分支处
+		return makeEncodeWriter(typ)
 	case isUint(kind):
 		return writeUint, nil
 	case kind == reflect.Bool:
@@ -176,19 +185,14 @@ func makeWriter(typ reflect.Type, tag rlpstruct.Tag) (writer, error) {
 		return writeString, nil
 	case kind == reflect.Slice && isByte(typ.Elem()):
 		return writeBytes, nil
-	case kind == reflect.Interface:
-		return writeInterface, nil
-	case kind == reflect.Ptr:
-		// 指针可能是指针的指针，因此我们需要递归地去发现该指针所指向的数据类型
-		return makePtrWriter(typ, tag)
-	case reflect.PtrTo(typ).Implements(encoderInterface):
-		return makeEncodeWriter(typ)
 	case kind == reflect.Array && isByte(typ.Elem()):
 		return makeByteArrayWriter(typ)
 	case kind == reflect.Slice || kind == reflect.Array:
 		return makeSliceWriter(typ, tag)
 	case kind == reflect.Struct:
 		return makeStructWriter(typ)
+	case kind == reflect.Interface:
+		return writeInterface, nil
 	default:
 		return nil, fmt.Errorf("rlp: type %v is not RLP-serializable", typ)
 	}

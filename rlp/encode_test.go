@@ -2,8 +2,12 @@ package rlp
 
 import (
 	"bytes"
+	"errors"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"math/big"
+	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -44,7 +48,7 @@ func (f undecodableEncoder) EncodeRLP(w io.Writer) error {
 }
 
 type encodeableReader struct {
-	A, B int
+	A, B uint
 }
 
 func (e *encodeableReader) Read(bz []byte) (int, error) {
@@ -317,4 +321,93 @@ func TestStructs(t *testing.T) {
 	for i, test := range encTests {
 		run(t, f, test, i)
 	}
+}
+
+func TestEncodeNil(t *testing.T) {
+	var encTests = []encTest{
+		{val: (*uint)(nil), output: "80"},
+		{val: (*string)(nil), output: "80"},
+		{val: (*[]byte)(nil), output: "80"},
+		{val: (*[10]byte)(nil), output: "80"},
+		{val: (*big.Int)(nil), output: "80"},
+		{val: (*[]string)(nil), output: "c0"},
+		{val: (*[10]string)(nil), output: "c0"},
+		{val: (*[]interface{})(nil), output: "c0"},
+		{val: (*[]struct{ uint })(nil), output: "c0"},
+		{val: (*interface{})(nil), output: "c0"},
+		{val: struct {
+			X *[]byte
+		}{}, output: "c180"},
+		{val: struct {
+			X *[2]byte
+		}{}, output: "c180"},
+		{val: struct {
+			X *uint
+		}{}, output: "c180"},
+		{val: struct {
+			X *string
+		}{}, output: "c180"},
+		{val: struct {
+			X *[2]string `rlp:"nilString"`
+		}{}, output: "c180"},
+		{val: struct {
+			X *[2]byte `rlp:"nilList"`
+		}{}, output: "c1c0"},
+	}
+	for i, test := range encTests {
+		run(t, f, test, i)
+	}
+}
+
+func TestEncodeInterfaces(t *testing.T) {
+	var encTests = []encTest{
+		{val: []io.Reader{reader}, output: "c3c20102"},
+	}
+	for i, test := range encTests {
+		run(t, f, test, i)
+	}
+}
+
+func TestEncodeEncoder(t *testing.T) {
+	var encTests = []encTest{
+		{val: (*testEncoder)(nil), output: "c0"},
+		{val: &testEncoder{}, output: "00010001000100010001"},
+		{val: &testEncoder{err: errors.New("test error")}, error: "test error"},
+		{val: struct {
+			E *testEncoderValueMethod
+		}{}, output: "c1c0"},
+		{val: struct {
+			E testEncoderValueMethod
+		}{}, output: "c3fafef0"},
+		{val: &struct{ TE testEncoder }{testEncoder{}}, output: "CA00010001000100010001"},
+		{val: &struct{ TE testEncoder }{testEncoder{errors.New("test error")}}, error: "test error"},
+		{val: testEncoder{}, error: "rlp: unadressable value of type rlp.testEncoder, EncodeRLP is pointer method"},
+		{val: []byteEncoder{0, 1, 2, 3, 4}, output: "C5C0C0C0C0C0"},
+	}
+	for i, test := range encTests {
+		run(t, f, test, i)
+	}
+}
+
+type intEncoder struct {
+	X int
+}
+
+func (ie intEncoder) EncodeRLP(w io.Writer) error {
+	_, err := w.Write(strconv.AppendUint([]byte{}, uint64(ie.X), 10))
+	return err
+}
+
+func TestReflect(t *testing.T) {
+	ieTyp := reflect.TypeOf(&intEncoder{X: 10})
+	impl := ieTyp.Implements(encoderInterface)
+	t.Log(impl)
+	ptr := reflect.PtrTo(ieTyp)
+	impl = ptr.Implements(encoderInterface)
+	t.Log(impl)
+
+	ie := &intEncoder{X: 2}
+	bz, err := EncodeToBytes(ie)
+	assert.Nil(t, err)
+	t.Log(bz)
 }
