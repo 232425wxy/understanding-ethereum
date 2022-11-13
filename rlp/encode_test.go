@@ -2,6 +2,7 @@ package rlp
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -131,7 +132,6 @@ func TestEncodeBigInteger(t *testing.T) {
 	for i, test := range encTests {
 		run(t, f, test, i)
 	}
-
 }
 
 func TestEncodeByteArray(t *testing.T) {
@@ -291,6 +291,11 @@ type optionalPtrFiled struct {
 type optionalPtrFieldNil struct {
 	A uint
 	B *[3]byte `rlp:"optional,nil"`
+}
+
+func TestName(t *testing.T) {
+	dec, _ := hex.DecodeString("c401010203")
+	t.Log(dec)
 }
 
 func TestStructs(t *testing.T) {
