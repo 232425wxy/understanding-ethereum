@@ -416,3 +416,9 @@ func TestReflect(t *testing.T) {
 	assert.Nil(t, err)
 	t.Log(bz)
 }
+
+func TestOther(t *testing.T) {
+	bz, err := EncodeToBytes(&Dog{Child: &Dog{Child: nil, Name: "bb"}, Name: "aa"})
+	assert.Nil(t, err)
+	t.Log(bz)
+}

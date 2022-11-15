@@ -328,3 +328,46 @@ type optionalPtrFieldNil struct {
 | optionalPtrFiled{A: 1, B: &[3]byte{1, 2, 3}}                 | [197 1 131 1 2 3]                                            |
 | &optionalPtrFieldNil{A: 1}                                   | [193 1]                                                      |
 
+## 6. 注意
+
+> 遗憾的是，目前乙太坊官方实现的RLP编码还无法随心所欲地对任何自定义数据类型进行编解码，比如在下面的这个例子里，有一个数据结构如下所示：
+>
+> ```go
+> type Dog struct {
+> 	Child *Dog
+> 	Name string
+> }
+> ```
+>
+> 然后我们实例化一个`*Dog`：
+>
+> ```go
+> d := &Dog{Child: &Dog{Name: "bb", Child: nil}, Name: "aa"}
+> ```
+>
+> 接着我们对其进行编码：
+>
+> ```go
+> bz, _ := EncodeToBytes(d) // bz: [200 196 192 130 98 98 130 97 97]
+> ```
+>
+> 再然后我们对编码结果进行解码：
+>
+> ```go
+> dst := &Dog{}
+> err := DecodeBytes(bz, dst)
+> ```
+>
+> 程序运行到这里，会报错：
+>
+> *&rlp.decodeError{msg:"too few elements", typ:(*reflect.rtype)(0x6ddba0), ctx:[]string{".Child", ".Child", "(rlp.Dog)"}}*
+
+**那么上面的问题如何解决呢？其实我们只需要在定义`Dog`结构体时做一点调整就可以了，如下所示：**
+
+```go
+type Dog struct {
+	Name  string
+	Child *Dog `rlp:"optional"`
+}
+```
+

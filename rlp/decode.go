@@ -283,6 +283,8 @@ func (s *Stream) Reset(r io.Reader, inputLimit uint64) {
 //
 // ListStart 官方源码的写法是："List"，我将其改成了："ListStart"，该方法返回的第一个参数表示list
 // 编码数据EC部分的长度。
+//
+// 接下来要解码的数据是一个list的RLP编码结果，在解码前，需要做一些准备工作。
 func (s *Stream) ListStart() (size uint64, err error) {
 	kind, size, err := s.Kind()
 	if err != nil {
@@ -669,6 +671,7 @@ func (s *Stream) uint(maxBits int) (uint64, error) {
 		s.kind = -1
 		return uint64(s.byteVal), nil
 	case String:
+		// 是一个大于127的整数，或者是0
 		if size > uint64(maxBits/8) {
 			return 0, errUintOverflow
 		}
@@ -884,8 +887,8 @@ func makeStructDecoder(typ reflect.Type) (decoder, error) {
 			if err == EOL {
 				if f.optional {
 					// optional后面的字段都设置为零值
-					for _, f := range fields[:i] {
-						fv := value.Field(f.index)
+					for _, fi := range fields[i:] {
+						fv := value.Field(fi.index)
 						fv.Set(reflect.Zero(fv.Type()))
 					}
 					break

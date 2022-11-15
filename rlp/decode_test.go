@@ -2,7 +2,6 @@ package rlp
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -237,17 +236,40 @@ func TestDecodeBool(t *testing.T) {
 func TestDecodeIntegers(t *testing.T) {
 	var decodeTests = []decodeTest{
 		{input: "05", ptr: new(uint32), value: uint32(5)},
+		{input: "80", ptr: new(uint32), value: uint32(0)},
+		{input: "820505", ptr: new(uint32), value: uint32(0x0505)},
+		{input: "83050505", ptr: new(uint32), value: uint32(0x050505)},
+		{input: "8405050505", ptr: new(uint32), value: uint32(0x05050505)},
+		{input: "C0", ptr: new(uint32), error: "rlp: expected input string or byte for uint32"},
+		{input: "B8020004", ptr: new(uint32), error: "rlp: non-canonical size information for uint32"},
+		{input: "820004", ptr: new(uint32), error: "rlp: non-canonical integer (leading zero bytes) for uint32"},
 	}
 	for i, test := range decodeTests {
 		runD(t, fd, test, i)
 	}
 }
 
-func TestOther(t *testing.T) {
-	bz := []byte{0x30, 0x20, 0x10} // 00110000 00100000 00010000
-	buffer := bytes.NewReader(bz)
-	res := [8]byte{}
-	buffer.Read(res[8-len(bz):])
-	i := binary.BigEndian.Uint64(res[:])
-	t.Log(i)
+func TestDecodeSlices(t *testing.T) {
+	var decodeTests = []decodeTest{
+		{input: "c0", ptr: new([]uint), value: []uint{}},
+	}
+	for i, test := range decodeTests {
+		runD(t, fd, test, i)
+	}
+}
+
+type Dog struct {
+	Name  string
+	Child *Dog `rlp:"optional"`
+}
+
+func TestDecodeSelfStruct(t *testing.T) {
+	d := &Dog{}
+	input := "c7826161c3826262"
+	comp := &Dog{Name: "aa", Child: &Dog{Name: "bb", Child: nil}}
+	err := DecodeBytes(unhex(input), d)
+	assert.Nil(t, err)
+	assert.Equal(t, comp.Name, d.Name)
+	assert.Equal(t, comp.Child.Name, d.Child.Name)
+	assert.Equal(t, comp.Child.Child, d.Child.Child)
 }
