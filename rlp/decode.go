@@ -1094,7 +1094,7 @@ func decodeSliceElems(s *Stream, val reflect.Value, elemDec decoder) error {
 			reflect.Copy(newVal, val)
 			val.Set(newVal)
 		}
-		if i > val.Len() {
+		if i >= val.Len() {
 			val.SetLen(i + 1)
 		}
 		if err := elemDec(s, val.Index(i)); err == EOL {

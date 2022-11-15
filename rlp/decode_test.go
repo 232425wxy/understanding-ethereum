@@ -252,6 +252,7 @@ func TestDecodeIntegers(t *testing.T) {
 func TestDecodeSlices(t *testing.T) {
 	var decodeTests = []decodeTest{
 		{input: "c0", ptr: new([]uint), value: []uint{}},
+		{input: "c80102030405060708", ptr: new([]uint), value: []uint{1, 2, 3, 4, 5, 6, 7, 8}},
 	}
 	for i, test := range decodeTests {
 		runD(t, fd, test, i)
