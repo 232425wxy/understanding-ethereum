@@ -2,6 +2,7 @@ package rlp
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -234,5 +235,19 @@ func TestDecodeBool(t *testing.T) {
 }
 
 func TestDecodeIntegers(t *testing.T) {
+	var decodeTests = []decodeTest{
+		{input: "05", ptr: new(uint32), value: uint32(5)},
+	}
+	for i, test := range decodeTests {
+		runD(t, fd, test, i)
+	}
+}
 
+func TestOther(t *testing.T) {
+	bz := []byte{0x30, 0x20, 0x10} // 00110000 00100000 00010000
+	buffer := bytes.NewReader(bz)
+	res := [8]byte{}
+	buffer.Read(res[8-len(bz):])
+	i := binary.BigEndian.Uint64(res[:])
+	t.Log(i)
 }

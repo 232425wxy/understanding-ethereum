@@ -1,5 +1,7 @@
 ## RLP简介
 
+<img src="https://gitee.com/Sagaya815/assets/raw/master/rlp.png" style="zoom:16%;" />
+
 `递归长度前缀（Recursive Length Prefix，RLP）`编码是以太坊项目特别设计的一种编码方式，它的编码结果相比于`JSON`编码占用更少的存储空间，因为在`JSON`编码方式中，需要额外的字段名信息来组织编码内容。而在`RLP`编码里，则使用一种被称为**前缀**的字段来组织编码内容，这可以有效减少编码过程中产生的其他额外信息。
 
 `RLP`编码结果由**编码前缀（Encoding Prefix，EP）**和**编码内容（Encoding content，EC）**两部分组成：
