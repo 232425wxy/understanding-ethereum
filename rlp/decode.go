@@ -1076,6 +1076,7 @@ func decodeListArray(s *Stream, val reflect.Value, elemDec decoder) error {
 	if i < length {
 		return &decodeError{msg: "input list has too few elements", typ: val.Type()}
 	}
+	// 如果此时EC部分还有数据没有被读取完毕，则ListEnd方法会报错
 	return wrapStreamError(s.ListEnd(), val.Type())
 }
 
