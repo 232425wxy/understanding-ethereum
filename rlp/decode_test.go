@@ -525,3 +525,12 @@ func TestDecodeSelfStruct(t *testing.T) {
 	assert.Equal(t, comp.Child.Name, d.Child.Name)
 	assert.Equal(t, comp.Child.Child, d.Child.Child)
 }
+
+func TestReflectSetValue(t *testing.T) {
+	var i *uint = new(uint)
+	var j uint = 8
+	//iTyp := reflect.TypeOf(i)
+	iVal := reflect.ValueOf(i)
+	iVal.Elem().Set(reflect.ValueOf(j))
+	t.Log(*i)
+}
