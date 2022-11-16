@@ -197,6 +197,9 @@ func decodeBigIntNoPtr(s *Stream, val reflect.Value) error {
 // decodeBigInt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/11|
 //
 // decodeBigInt 方法实现了 decoder 函数句柄，该方法解码rlp编码内容为 *big.Int。
+// 这个方法似乎在单独解码指针类型的 big.Int 时确实调用不到，但是，如果某个结构体中含有
+// 指针类型的 big.Int 字段，则在解码该结构体的后续迭代过程中，可能会调用该方法来解码该
+// 结构体中的 *big.Int 字段。
 func decodeBigIntPtr(s *Stream, val reflect.Value) error {
 	x := val.Interface().(*big.Int)
 	if x == nil {

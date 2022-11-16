@@ -534,3 +534,12 @@ func TestReflectSetValue(t *testing.T) {
 	iVal.Elem().Set(reflect.ValueOf(j))
 	t.Log(*i)
 }
+
+func TestBigIntPtr(t *testing.T) {
+	x := new(big.Int)
+	rTyp := reflect.TypeOf(x)
+	//rVal := reflect.ValueOf(x)
+	assert.Equal(t, reflect.Pointer, rTyp.Kind())
+	b := rTyp.AssignableTo(reflect.PtrTo(reflect.TypeOf(big.Int{})))
+	t.Log(b)
+}
