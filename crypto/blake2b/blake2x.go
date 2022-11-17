@@ -25,6 +25,6 @@ const (
 	OutputLengthUnknown = 0
 	// magicUnknownOutputLength 是输出大小的一个魔法值，表示输出字节数的未知数，4294967295。
 	magicUnknownOutputLength = (1 << 32) - 1
-	// maxOutputLength 是当输出字节数未知时产生的绝对最大字节数。
+	// maxOutputLength 是当输出字节数未知时产生的绝对最大字节数，274877906944。
 	maxOutputLength = (1 << 32) * 64
 )
