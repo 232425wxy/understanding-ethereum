@@ -13,3 +13,15 @@ BLAKE2b 为 64 位 CPU（包括 ARM Neon）优化，可以生成最长64字节�
 - 官方源码里的`blake2b_amd64.go`文件没有被分析，因为这个文件里的代码要求使用非`gccgo`编译器，而我自己电脑上的编译器恰恰就是`gccgo`
 - 官方源码里的`blake2b_f_fuzz.go`文件没有被分析，因为我的电脑里没有装`go-fuzz`
 - 官方源码里的`blake2bAVX2_amd64.go`文件没有被分析，因为这个文件里的代码要求使用非`gccgo`编译器，而我自己电脑上的编译器恰恰就是`gccgo`
+
+# 使用方法
+
+`regesiter.go`文件里将`ethereum`实现的`blake2b`哈希函数注册到了`golang...\crypto.go`里：
+
+```go
+crypto.RegisterHash(crypto.BLAKE2b_256, newHash256)
+crypto.RegisterHash(crypto.BLAKE2b_384, newHash384)
+crypto.RegisterHash(crypto.BLAKE2b_512, newHash512)
+```go
+
+
