@@ -1,5 +1,4 @@
 //go:build !amd64 || appengine || gccgo
-// +build !amd64 appengine gccgo
 
 package blake2b
 
