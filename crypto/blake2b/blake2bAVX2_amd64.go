@@ -3,7 +3,9 @@
 
 package blake2b
 
-import "golang.org/x/sys/cpu"
+import (
+	"golang.org/x/sys/cpu"
+)
 
 func init() {
 	useAVX2 = cpu.X86.HasAVX2
