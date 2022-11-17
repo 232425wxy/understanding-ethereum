@@ -225,19 +225,25 @@ func Sum256(data []byte) [Size256]byte {
 //
 // New512 方法接受一个字节切片key作为输入参数，返回一个新的 hash.Hash 来计算 BLAKE2b-512
 // 校验和。当输入的key等于nil计算得到的哈希值变成一个MAC。key的长度必须在0到64字节之间。
-func New512(key []byte) (hash.Hash, error) { return newDigest(Size, key) }
+func New512(key []byte) (hash.Hash, error) {
+	return newDigest(Size, key)
+}
 
 // New384 ♏ |作者：吴翔宇| 🍁 |日期：2022/11/16|
 //
 // New384 方法接受一个字节切片key作为输入参数，返回一个新的 hash.Hash 来计算 BLAKE2b-384
 // 校验和。当输入的key等于nil计算得到的哈希值变成一个MAC。key的长度必须在0到64字节之间。
-func New384(key []byte) (hash.Hash, error) { return newDigest(Size384, key) }
+func New384(key []byte) (hash.Hash, error) {
+	return newDigest(Size384, key)
+}
 
 // New256 ♏ |作者：吴翔宇| 🍁 |日期：2022/11/16|
 //
 // New256 方法接受一个字节切片key作为输入参数，返回一个新的 hash.Hash 来计算 BLAKE2b-256
 // 校验和。当输入的key等于nil计算得到的哈希值变成一个MAC。key的长度必须在0到64字节之间。
-func New256(key []byte) (hash.Hash, error) { return newDigest(Size256, key) }
+func New256(key []byte) (hash.Hash, error) {
+	return newDigest(Size256, key)
+}
 
 // New ♏ |作者：吴翔宇| 🍁 |日期：2022/11/16|
 //
