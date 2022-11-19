@@ -34,57 +34,57 @@ return g.EncodePoint(r)
 
 ```go
 func (c *bls12381Pairing) Run(input []byte) ([]byte, error) {
-// Implements EIP-2537 Pairing precompile logic.
-// > Pairing call expects `384*k` bytes as an inputs that is interpreted as byte concatenation of `k` slices. Each slice has the following structure:
-// > - `128` bytes of G1 point encoding
-// > - `256` bytes of G2 point encoding
-// > Output is a `32` bytes where last single byte is `0x01` if pairing result is equal to multiplicative identity in a pairing target field and `0x00` otherwise
-// > (which is equivalent of Big Endian encoding of Solidity values `uint256(1)` and `uin256(0)` respectively).
-k := len(input) / 384
-if len(input) == 0 || len(input)%384 != 0 {
-return nil, errBLS12381InvalidInputLength
-}
+    // Implements EIP-2537 Pairing precompile logic.
+    // > Pairing call expects `384*k` bytes as an inputs that is interpreted as byte concatenation of `k` slices. Each slice has the following structure:
+    // > - `128` bytes of G1 point encoding
+    // > - `256` bytes of G2 point encoding
+    // > Output is a `32` bytes where last single byte is `0x01` if pairing result is equal to multiplicative identity in a pairing target field and `0x00` otherwise
+    // > (which is equivalent of Big Endian encoding of Solidity values `uint256(1)` and `uin256(0)` respectively).
+    k := len(input) / 384
+    if len(input) == 0 || len(input)%384 != 0 {
+        return nil, errBLS12381InvalidInputLength
+    }
 
-// Initialize BLS12-381 pairing engine
-e := bls12381.NewPairingEngine()
-g1, g2 := e.G1, e.G2
+    // Initialize BLS12-381 pairing engine
+    e := bls12381.NewPairingEngine()
+    g1, g2 := e.G1, e.G2
 
-// Decode pairs
-for i := 0; i < k; i++ {
-off := 384 * i
-t0, t1, t2 := off, off+128, off+384
+    // Decode pairs
+    for i := 0; i < k; i++ {
+        off := 384 * i
+        t0, t1, t2 := off, off+128, off+384
 
-// Decode G1 point
-p1, err := g1.DecodePoint(input[t0:t1])
-if err != nil {
-return nil, err
-}
-// Decode G2 point
-p2, err := g2.DecodePoint(input[t1:t2])
-if err != nil {
-return nil, err
-}
+        // Decode G1 point
+        p1, err := g1.DecodePoint(input[t0:t1])
+        if err != nil {
+            return nil, err
+        }
+        // Decode G2 point
+        p2, err := g2.DecodePoint(input[t1:t2])
+        if err != nil {
+            return nil, err
+        }
 
-// 'point is on curve' check already done,
-// Here we need to apply subgroup checks.
-if !g1.InCorrectSubgroup(p1) {
-return nil, errBLS12381G1PointSubgroup
-}
-if !g2.InCorrectSubgroup(p2) {
-return nil, errBLS12381G2PointSubgroup
-}
+        // 'point is on curve' check already done,
+        // Here we need to apply subgroup checks.
+        if !g1.InCorrectSubgroup(p1) {
+            return nil, errBLS12381G1PointSubgroup
+        }
+        if !g2.InCorrectSubgroup(p2) {
+            return nil, errBLS12381G2PointSubgroup
+        }
 
-// Update pairing engine with G1 and G2 ponits
-e.AddPair(p1, p2)
-}
-// Prepare 32 byte output
-out := make([]byte, 32)
+        // Update pairing engine with G1 and G2 ponits
+        e.AddPair(p1, p2)
+    }
+    // Prepare 32 byte output
+    out := make([]byte, 32)
 
-// Compute pairing and set the result
-if e.Check() {
-out[31] = 1
-}
-return out, nil
+    // Compute pairing and set the result
+    if e.Check() {
+        out[31] = 1
+    }
+    return out, nil
 }
 ```
 
