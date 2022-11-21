@@ -3,6 +3,7 @@ module github.com/232425wxy/understanding-ethereum
 go 1.19
 
 require (
+	github.com/go-stack/stack v1.8.1
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/sys v0.2.0
 )
