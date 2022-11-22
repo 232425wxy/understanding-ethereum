@@ -111,3 +111,16 @@ func TestLogfmtFormat(t *testing.T) {
 	t.Log(string(format.Format(&r)))
 	t.Log(byte(' '))
 }
+
+type NodeID []byte
+
+func (id NodeID) TerminalString() string {
+	return string(id[:4])
+}
+
+func TestFormatLogfmtValue(t *testing.T) {
+	bz, _ := hex.DecodeString("01020304")
+	var id NodeID = bz
+	str := formatLogfmtValue(id, true)
+	t.Log(str)
+}

@@ -80,6 +80,18 @@ type TerminalStringer interface {
 
 // API 函数
 
+// PrintOrigins ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// PrintOrigins 接受一个bool类型的数据作为输入参数，该方法是一个开关函数，如果传入的参数等于true，那
+// 么在以后打印日志信息，会打印出输出日志信息所在的代码文件和代码行，类似于："file:line"。
+func PrintOrigins(enabled bool) {
+	if enabled {
+		atomic.StoreUint32(&locationEnabled, 1)
+	} else {
+		atomic.StoreUint32(&locationEnabled, 0)
+	}
+}
+
 // TerminalFormat ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
 //
 // TerminalFormat
@@ -106,12 +118,38 @@ func TerminalFormat(useColor bool) Format {
 		// TRACE DEBUG INFO WARN ERROR CRIT
 		lvl := record.Lvl.AlignedString()
 		if atomic.LoadUint32(&locationEnabled) != 0 {
+			// 需要在每一条日志前加上输出日志的代码位置
 			location := fmt.Sprintf("%+v", record.Call)
 			for _, prefix := range locationTrims {
 				location = strings.TrimPrefix(location, prefix)
 			}
 			align := int(atomic.LoadUint32(&locationLength))
+			if align < len(location) {
+				align = len(location)
+				atomic.StoreUint32(&locationLength, uint32(align))
+			}
+			padding := strings.Repeat(" ", align-len(location))
+			// 上面的代码都是为了打印输出日志信息的代码位置做准备
+
+			if color > 0 {
+				_, _ = fmt.Fprintf(buffer, "\x1b[%dm%s\x1b[0m[%s|%s]%s %s ", color, lvl, record.Time.Format(termTimeFormat), location, padding, record.Msg)
+			} else {
+				_, _ = fmt.Fprintf(buffer, "%s[%s|%s]%s %s ", lvl, record.Time.Format(termTimeFormat), location, padding, record.Msg)
+			}
+		} else {
+			if color > 0 {
+				_, _ = fmt.Fprintf(buffer, "\x1b[%dm%s\x1b[0m[%s] %s ", color, lvl, record.Time.Format(termTimeFormat), record.Msg)
+			} else {
+				_, _ = fmt.Fprintf(buffer, "%s[%s] %s ", lvl, record.Time.Format(termTimeFormat), record.Msg)
+			}
 		}
+		length := utf8.RuneCountInString(record.Msg)
+		if len(record.Ctx) > 0 && length < termMsgJust {
+			// 如果此条日志记录需要打印键值对信息，且日志消息长度小于40，那么就补齐长度到40，再在后面加上键值对信息
+			buffer.Write(bytes.Repeat([]byte{' '}, termMsgJust-length))
+		}
+		logfmt(buffer, record.Ctx, color, true)
+		return buffer.Bytes()
 	})
 }
 
@@ -206,7 +244,9 @@ func FormatLogfmtUint64(n uint64) string {
 
 // logfmt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
 //
-// logfmt 方法的目的是将日志条目里的键值对对齐输入到第一个给定的输入参数里，然后根据给定的颜色，对键值对的键值上色。
+// logfmt 方法的目的是将日志条目里的键值对对齐输入到第一个给定的输入参数里，然后根据给定的颜色，对键值对的键值上色，
+// 一般来讲，传入的第三个参数用来指定打印键值对时键的颜色，这个颜色一般由日志等级决定，比如如果日志等级是 LvlCrit，
+// 则颜色就是紫色。
 func logfmt(buf *bytes.Buffer, ctx []interface{}, color int, term bool) {
 	for i := 0; i < len(ctx); i += 2 {
 		if i != 0 {
@@ -269,7 +309,7 @@ func formatLogfmtValue(value interface{}, term bool) string {
 	}
 	if term {
 		if s, ok := value.(TerminalStringer); ok {
-			// 用户自定义在终端输出的字符串格式
+			// 用户自定义在终端输出的字符串格式，这个还是很有用的，比如用户可以自定义ID的输出长度是多少
 			return escapeString(s.TerminalString())
 		}
 	}
