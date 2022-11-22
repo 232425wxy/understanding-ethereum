@@ -1,6 +1,7 @@
 package log
 
 import (
+	"bytes"
 	"encoding/hex"
 	"github.com/go-stack/stack"
 	"testing"
@@ -70,4 +71,43 @@ func TestJSONFormat(t *testing.T) {
 	}
 	bz := JSONFormat().Format(&r)
 	t.Log(string(bz))
+}
+
+func TestColor(t *testing.T) {
+	t.Logf("\x1b[%dm%s\x1b[0m", 35, "以太坊")
+	t.Logf("\x1b[%dm%s\x1b[0m", 31, "以太坊")
+	t.Logf("\x1b[%dm%s\x1b[0m", 33, "以太坊")
+	t.Logf("\x1b[%dm%s\x1b[0m", 32, "以太坊")
+	t.Logf("\x1b[%dm%s\x1b[0m", 36, "以太坊")
+	t.Logf("\x1b[%dm%s\x1b[0m", 34, "以太坊")
+}
+
+func TestLogFmt(t *testing.T) {
+	buffer := new(bytes.Buffer)
+	buffer.WriteByte('\n')
+	ctx1 := []interface{}{"app", "ethereum/server", "consensus", "POS", "validators", 40}
+	ctx2 := []interface{}{"app", "blockchain", "consensus", "PBFT", "validators", 4}
+	term := true
+	logfmt(buffer, ctx1, 33, term)
+	logfmt(buffer, ctx2, 31, term)
+	t.Log(buffer.String())
+}
+
+func TestLogfmtFormat(t *testing.T) {
+	r := Record{
+		Time: time.Now(),
+		Lvl:  3,
+		Msg:  "Start network",
+		Ctx:  []interface{}{"app", "ethereum/server", "consensus", "POS"},
+		Call: stack.Caller(2),
+		KeyNames: RecordKeyNames{
+			Time: timeKey,
+			Msg:  msgKey,
+			Lvl:  lvlKey,
+			Ctx:  ctxKey,
+		},
+	}
+	format := LogfmtFormat()
+	t.Log(string(format.Format(&r)))
+	t.Log(byte(' '))
 }

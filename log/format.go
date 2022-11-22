@@ -7,7 +7,11 @@ import (
 	"math/big"
 	"reflect"
 	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
+	"unicode/utf8"
 )
 
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
@@ -15,9 +19,40 @@ import (
 // 定义包级全局变量
 
 const (
-	timeFormat  = time.RFC3339
-	floatFormat = 'f'
+	timeFormat        = time.RFC3339
+	termTimeFormat    = "01-02|15:04:05.000"
+	floatFormat       = 'f'
+	termMsgJust       = 40
+	termCtxMaxPadding = 40
 )
+
+// locationLength ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// locationLength 存储了日志信息中，"位置"字符串的长度，用于对齐日志使用。
+var locationLength uint32
+
+// locationTrims ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// locationTrims 如果我们在输出日志信息时，要求定位到输出日志信息的文件位置，具体来说就是在哪个代码文件的
+// 第多少行输出了[DEBUG]消息，如果显式的位置含有"github.com/232425wxy/understanding-ethereum"字符
+// 串，则将其去除掉。
+var locationTrims = []string{"github.com/232425wxy/understanding-ethereum"}
+
+// locationEnabled ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// locationEnabled 是一个开关，如果这个值不等于，那么在输出日志信息时，会定位到输出日志信息的位置，具体来
+// 说就是在哪个文件的那一行代码处输出了这个日志信息。
+var locationEnabled uint32
+
+// fieldPadding ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// fieldPadding 变量用于存储日志信息里键值对的宽度信息，为了在输出日志时保持左右对齐。
+var fieldPadding = make(map[string]int)
+
+// fieldPaddingLock ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// fieldPaddingLock 是一把锁，每次读取或改写 fieldPadding 时都要获取该锁，然后用完再释放。
+var fieldPaddingLock sync.RWMutex
 
 type Format interface {
 	Format(r *Record) []byte
@@ -44,6 +79,55 @@ type TerminalStringer interface {
 /*⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓⛓*/
 
 // API 函数
+
+// TerminalFormat ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// TerminalFormat
+func TerminalFormat(useColor bool) Format {
+	return FormatFunc(func(record *Record) []byte {
+		var color = 0
+		if useColor {
+			switch record.Lvl {
+			case LvlCrit:
+				color = 35 // 紫色
+			case LvlError:
+				color = 31 // 红色
+			case LvlWarn:
+				color = 33 // 黄色
+			case LvlInfo:
+				color = 32 // 绿色
+			case LvlDebug:
+				color = 36 // 蓝绿色
+			case LvlTrace:
+				color = 34 // 蓝色
+			}
+		}
+		buffer := new(bytes.Buffer)
+		// TRACE DEBUG INFO WARN ERROR CRIT
+		lvl := record.Lvl.AlignedString()
+		if atomic.LoadUint32(&locationEnabled) != 0 {
+			location := fmt.Sprintf("%+v", record.Call)
+			for _, prefix := range locationTrims {
+				location = strings.TrimPrefix(location, prefix)
+			}
+			align := int(atomic.LoadUint32(&locationLength))
+		}
+	})
+}
+
+// LogfmtFormat ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
+//
+// LogfmtFormat 方法将日志记录里的键值对按照人们易读的方式组合输出，例如：
+//
+//	t=2022-11-22T19:51:30+08:00 lvl=info msg="Start network" app=ethereum/server consensus=POS
+func LogfmtFormat() Format {
+	return FormatFunc(func(record *Record) []byte {
+		common := []interface{}{record.KeyNames.Time, record.Time, record.KeyNames.Lvl, record.Lvl, record.KeyNames.Msg, record.Msg}
+		buf := new(bytes.Buffer)
+		logfmt(buf, append(common, record.Ctx...), 0, false)
+		return buf.Bytes()
+	})
+}
 
 // JSONFormat ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
 //
@@ -122,14 +206,50 @@ func FormatLogfmtUint64(n uint64) string {
 
 // logfmt ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
 //
-// logfmt
+// logfmt 方法的目的是将日志条目里的键值对对齐输入到第一个给定的输入参数里，然后根据给定的颜色，对键值对的键值上色。
 func logfmt(buf *bytes.Buffer, ctx []interface{}, color int, term bool) {
 	for i := 0; i < len(ctx); i += 2 {
 		if i != 0 {
 			// 加一个空格
 			buf.WriteByte(' ')
 		}
+
+		k, ok := ctx[i].(string) // 键最好是string类型的
+		v := formatLogfmtValue(ctx[i+1], term)
+		if !ok {
+			k, v = errorKey, formatLogfmtValue(k, term)
+		}
+
+		fieldPaddingLock.RLock()
+		padding := fieldPadding[k]
+		fieldPaddingLock.RUnlock()
+
+		// 一个汉字占用3个字节，但是一个汉字也就是一个字符，如果用len方法去计算字符串长度，返回的
+		// 结果是是字节数量，但是我们想要的是字符数量，这样才容易对齐
+		length := utf8.RuneCountInString(v)
+		if padding < length && length <= termCtxMaxPadding {
+			padding = length
+			fieldPaddingLock.Lock()
+			fieldPadding[k] = padding
+			fieldPaddingLock.Unlock()
+		}
+
+		// 输入日志信息里的键值对
+		if color > 0 {
+			_, _ = fmt.Fprintf(buf, "\x1b[%dm%s\x1b[0m=", color, k)
+		} else {
+			buf.WriteString(k)
+			buf.WriteByte('=')
+		}
+		buf.WriteString(v)
+
+		// 之所以要求i小于len(ctx)-2，是因为最后一对键值对就没必要保持对齐啦
+		if i < len(ctx)-2 && padding > length {
+			// 保持日志里的键值对对齐
+			buf.Write(bytes.Repeat([]byte{' '}, padding-length))
+		}
 	}
+	buf.WriteByte('\n')
 }
 
 func formatLogfmtValue(value interface{}, term bool) string {
@@ -139,14 +259,9 @@ func formatLogfmtValue(value interface{}, term bool) string {
 
 	switch v := value.(type) {
 	case time.Time:
-		// Performance optimization: No need for escaping since the provided
-		// timeFormat doesn't have any escape characters, and escaping is
-		// expensive.
 		return v.Format(timeFormat)
 
 	case *big.Int:
-		// Big ints get consumed by the Stringer clause so we need to handle
-		// them earlier on.
 		if v == nil {
 			return "<nil>"
 		}
@@ -154,7 +269,7 @@ func formatLogfmtValue(value interface{}, term bool) string {
 	}
 	if term {
 		if s, ok := value.(TerminalStringer); ok {
-			// Custom terminal stringer provided, use that
+			// 用户自定义在终端输出的字符串格式
 			return escapeString(s.TerminalString())
 		}
 	}
