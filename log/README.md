@@ -123,5 +123,5 @@ l.Error("error logger")
 ```
 
 >输出
-> WARN [01-01|00:00:00.000] warn logger                              blockchain=ethereum
-> ERROR[01-01|00:00:00.000] error logger                             blockchain=ethereum
+>WARN [01-01|00:00:00.000] warn logger                              blockchain=ethereum
+>ERROR[01-01|00:00:00.000] error logger                             blockchain=ethereum
