@@ -11,6 +11,8 @@
 - Error
 - Crit
 
+以上六个级别的日志等级从上到下逐渐递增。
+
 此外，还支持将日志信息重定向到三种输出通道：
 
 - 控制台
@@ -41,8 +43,8 @@ l.Info("start service")
 ```
 
 >输出：
-INFO [01-01|00:00:00.000] start service                            blockchain=ethereum
-ERROR[01-01|00:00:00.000] start service                            blockchain=ethereum
+>INFO [01-01|00:00:00.000] start service                            blockchain=ethereum
+>ERROR[01-01|00:00:00.000] start service                            blockchain=ethereum
 
 ### JSON格式输出日志
 
@@ -56,8 +58,8 @@ l.Error("start service")
 ```
 
 >输出
-{"blockchain":"ethereum","lvl":"info","msg":"start service","t":"0001-01-01T00:00:00Z"}
-{"blockchain":"ethereum","lvl":"eror","msg":"start service","t":"0001-01-01T00:00:00Z"}
+>{"blockchain":"ethereum","lvl":"info","msg":"start service","t":"0001-01-01T00:00:00Z"}
+>{"blockchain":"ethereum","lvl":"eror","msg":"start service","t":"0001-01-01T00:00:00Z"}
 
 ### 将日志信息打印到文件里
 
@@ -70,3 +72,56 @@ l.Error("start service")
 ```
 
 结果：
+
+![image-20221124143154963](https://gitee.com/Sagaya815/assets/raw/master/image-20221124143154963.png)
+
+### 将日志打印到网络连接通道里
+
+这里我们利用`net`包建立了一对连接，然后在服务端把日志信息发送给客户端，客户端接收到以后再打印到控制台上：
+
+```go
+l := New("blockchain", "ethereum")
+stopc := make(chan struct{})
+server, err := net.Listen("tcp", "0.0.0.0:8080")
+assert.Nil(t, err)
+go func() {
+	for {
+		conn, err := server.Accept()
+		assert.Nil(t, err)
+		l.SetHandler(StreamHandler(conn, TerminalFormat(true)))
+		l.Trace("welcome")
+	}
+}()
+
+go func() {
+	conn, err := net.Dial("tcp", "127.0.0.1:8080")
+	assert.Nil(t, err)
+	for {
+		buf := make([]byte, 1024)
+		n, err := conn.Read(buf)
+		assert.Nil(t, err)
+		fmt.Println(string(buf[:n]))
+		stopc <- struct{}{}
+	}
+}()
+<-stopc
+```
+
+>输出
+TRACE[01-01|00:00:00.000] welcome                                  blockchain=ethereum
+
+### 设置打印日志的级别
+
+在下面的例子里，我们要求最多只打印`Warn`这一级别的日志，也就是说，`Trace Debug Info`这三个级别的日志不会被打印
+
+```go
+l := New("blockchain", "ethereum")
+l.SetHandler(LvlFilterHandler(LvlWarn, StreamHandler(os.Stdout, TerminalFormat(true))))
+l.Info("info logger")
+l.Warn("warn logger")
+l.Error("error logger")
+```
+
+>输出
+WARN [01-01|00:00:00.000] warn logger                              blockchain=ethereum
+ERROR[01-01|00:00:00.000] error logger                             blockchain=ethereum
