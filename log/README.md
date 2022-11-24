@@ -107,8 +107,8 @@ go func() {
 <-stopc
 ```
 
->输出
-TRACE[01-01|00:00:00.000] welcome                                  blockchain=ethereum
+>输出：
+client: TRACE[01-01|00:00:00.000] welcome                                  blockchain=ethereum
 
 ### 设置打印日志的级别
 

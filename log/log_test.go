@@ -2,6 +2,8 @@ package log
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"net"
 	"os"
 	"testing"
 )
@@ -28,28 +30,28 @@ func TestExample(t *testing.T) {
 	l.Info("info logger")
 	l.Warn("warn logger")
 	l.Error("error logger")
-	//stopc := make(chan struct{})
-	//server, err := net.Listen("tcp", "0.0.0.0:8080")
-	//assert.Nil(t, err)
-	//go func() {
-	//	for {
-	//		conn, err := server.Accept()
-	//		assert.Nil(t, err)
-	//		l.SetHandler(StreamHandler(conn, TerminalFormat(true)))
-	//		l.Trace("welcome")
-	//	}
-	//}()
-	//
-	//go func() {
-	//	conn, err := net.Dial("tcp", "127.0.0.1:8080")
-	//	assert.Nil(t, err)
-	//	for {
-	//		buf := make([]byte, 1024)
-	//		n, err := conn.Read(buf)
-	//		assert.Nil(t, err)
-	//		fmt.Println(string(buf[:n]))
-	//		stopc <- struct{}{}
-	//	}
-	//}()
-	//<-stopc
+	stopc := make(chan struct{})
+	server, err := net.Listen("tcp", "0.0.0.0:8080")
+	assert.Nil(t, err)
+	go func() {
+		for {
+			conn, err := server.Accept()
+			assert.Nil(t, err)
+			l.SetHandler(StreamHandler(conn, TerminalFormat(true)))
+			l.Trace("welcome")
+		}
+	}()
+
+	go func() {
+		conn, err := net.Dial("tcp", "127.0.0.1:8080")
+		assert.Nil(t, err)
+		for {
+			buf := make([]byte, 1024)
+			n, err := conn.Read(buf)
+			assert.Nil(t, err)
+			fmt.Println("client:", string(buf[:n]))
+			stopc <- struct{}{}
+		}
+	}()
+	<-stopc
 }
