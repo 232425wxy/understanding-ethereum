@@ -40,8 +40,8 @@ var locationTrims = []string{"github.com/232425wxy/understanding-ethereum"}
 
 // locationEnabled ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
 //
-// locationEnabled 是一个开关，如果这个值不等于，那么在输出日志信息时，会定位到输出日志信息的位置，具体来
-// 说就是在哪个文件的那一行代码处输出了这个日志信息。
+// locationEnabled 是一个开关，如果这个值不等于0，那么在输出日志信息时，会定位到输出日志信息的位置，具体来
+// 说就是在哪个文件的哪一行代码处输出了这个日志信息。
 var locationEnabled uint32
 
 // fieldPadding ♏ |作者：吴翔宇| 🍁 |日期：2022/11/22|
