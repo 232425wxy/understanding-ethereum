@@ -108,7 +108,7 @@ go func() {
 ```
 
 >输出：
-client: TRACE[01-01|00:00:00.000] welcome                                  blockchain=ethereum
+> client: TRACE[01-01|00:00:00.000] welcome                                  blockchain=ethereum
 
 ### 设置打印日志的级别
 
@@ -123,5 +123,5 @@ l.Error("error logger")
 ```
 
 >输出
-WARN [01-01|00:00:00.000] warn logger                              blockchain=ethereum
-ERROR[01-01|00:00:00.000] error logger                             blockchain=ethereum
+> WARN [01-01|00:00:00.000] warn logger                              blockchain=ethereum
+> ERROR[01-01|00:00:00.000] error logger                             blockchain=ethereum
