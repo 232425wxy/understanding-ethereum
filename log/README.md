@@ -23,6 +23,7 @@
 
 - 控制台格式
 - JSON格式
+- 普通日志格式
 
 ## 使用方法
 
@@ -64,6 +65,20 @@ l.Error("start service")
 >{"blockchain":"ethereum","lvl":"info","msg":"start service","t":"0001-01-01T00:00:00Z"}
 > 
 >{"blockchain":"ethereum","lvl":"eror","msg":"start service","t":"0001-01-01T00:00:00Z"}
+
+### 普通日志格式
+
+`LogfmtFormat()`函数定义了将日志信息按照普通日志格式打印的逻辑：
+
+```go
+l := New("blockchain", "ethereum")
+l.SetHandler(StreamHandler(os.Stdout, LogfmtFormat()))
+l.Trace("trace logger")
+```
+
+>输出：
+> 
+> t=0001-01-01T00:00:00Z lvl=trce msg="trace logger" blockchain=ethereum
 
 ### 将日志信息打印到文件里
 
