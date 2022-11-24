@@ -147,3 +147,20 @@ l.Error("error logger")
 >WARN [01-01|00:00:00.000] warn logger                              blockchain=ethereum
 > 
 >ERROR[01-01|00:00:00.000] error logger                             blockchain=ethereum
+
+### 调试代码时输出日志
+
+调试代码时输出的日志信息要想包含"file:line"这样的位置信息，打印日志的格式需要设置成控制台格式才能有效：
+
+```go
+PrintOrigins(true)
+l := New("blockchain", "ethereum")
+l.SetHandler(StreamHandler(os.Stdout, TerminalFormat(true)))
+l.Trace("trace logger")
+```
+
+`PrintOrigins(true)`函数里的`true`参数会把输出位置信息的开关打开。
+
+>输出：
+> 
+> TRACE[01-01|00:00:00.000|/log/log_test.go:24] trace logger                             blockchain=ethereum

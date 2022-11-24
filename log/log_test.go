@@ -18,8 +18,9 @@ func TestRootNew(t *testing.T) {
 }
 
 func TestExample(t *testing.T) {
+	PrintOrigins(true)
 	l := New("blockchain", "ethereum")
-	l.SetHandler(StreamHandler(os.Stdout, LogfmtFormat()))
+	l.SetHandler(StreamHandler(os.Stdout, TerminalFormat(true)))
 	l.Trace("trace logger")
 	//file, _ := os.OpenFile("text.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0664)
 	//l.SetHandler(StreamHandler(file, TerminalFormat(false)))
