@@ -1,0 +1,6 @@
+[34mTRACE[0m[01-01|00:00:00.000] trace logger                             [34mblockchain[0m=meta--
+[36mDEBUG[0m[01-01|00:00:00.000] debug logger                             [36mblockchain[0m=meta--
+[32mINFO [0m[01-01|00:00:00.000] info logger                              [32mblockchain[0m=meta--
+[33mWARN [0m[01-01|00:00:00.000] warn logger                              [33mblockchain[0m=meta--
+[31mERROR[0m[01-01|00:00:00.000] error logger                             [31mblockchain[0m=meta--
+[35mCRIT [0m[01-01|00:00:00.000] crit logger                              [35mblockchain[0m=meta--

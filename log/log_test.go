@@ -56,3 +56,15 @@ func TestExample(t *testing.T) {
 	//}()
 	//<-stopc
 }
+
+func TestRedirectToFile(t *testing.T) {
+	file, _ := os.OpenFile("text.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	l := New("blockchain", "meta--")
+	l.SetHandler(StreamHandler(file, TerminalFormat(true)))
+	l.Trace("trace logger")
+	l.Debug("debug logger")
+	l.Info("info logger")
+	l.Warn("warn logger")
+	l.Error("error logger")
+	l.Crit("crit logger")
+}
